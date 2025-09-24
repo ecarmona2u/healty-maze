@@ -19,8 +19,8 @@ VERDE = (50, 200, 50)
 
 # --- Carga de imágenes ---
 try:
-    background_image = pygame.image.load('nivel1.jpg').convert()
-    ball_image = pygame.image.load('bola1.png').convert_alpha()
+    background_image = pygame.image.load('assets/nivel1.jpg').convert()
+    ball_image = pygame.image.load('assets/bola_temp.png').convert_alpha()
 except pygame.error as message:
     print('No se pudieron cargar las imágenes:', message)
     pygame.quit()
