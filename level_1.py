@@ -9,6 +9,7 @@ from pantalla_derrota import run_pantalla_derrota, RETURN_REINTENTAR
 from coleccionable import Coleccionable 
 import sys
 import time 
+import loading_screen 
 
 # --- CONSTANTES ---
 PATH_FONDO_NIVEL_1 = "recursos/FondoNivel1.jpg" 
@@ -17,11 +18,14 @@ NUM_COLECCIONABLES_REQUERIDOS = 6
 TIEMPO_LIMITE_SEGUNDOS = 30 
 TIEMPO_PENALIZACION = 3
 
-# --- CONSTANTES DE PAUSA (Sin cambios) ---
+# --- CONSTANTES DE PAUSA ---
 PATH_BTN_PAUSA = "recursos/btn_pausa.png"
 PATH_BTN_PLAY = "recursos/btn_play.png"
 PATH_BTN_MENU_PAUSA = "recursos/btn_menu_pausa.png"
 PATH_BTN_REINICIAR = "recursos/btn_reiniciar.png"
+
+# 🟢 NUEVA CONSTANTE PARA EL FONDO DEL MENÚ DE PAUSA
+PATH_FONDO_PAUSA = "recursos/fondo_menu_pausa.png" 
 
 # Colores para la UI
 VERDE_BARRA = (0, 200, 0)
@@ -29,7 +33,8 @@ ROJO_BARRA = (200, 0, 0)
 GRIS_FONDO = (50, 50, 50)
 BLANCO = (255, 255, 255)
 AMARILLO = (255, 255, 0)
-GRIS_OSCURO_PAUSA = (50, 50, 50, 180) 
+GRIS_OSCURO_PAUSA = (0,0,0,0) # Semi-transparente para oscurecer el nivel (Actualmente transparente)
+
 
 # --- CLASE BOTON SIMPLE (Sin cambios) ---
 class BotonSimple:
@@ -54,7 +59,7 @@ class BotonSimple:
             return self.action
         return None
 
-# --- FUNCIÓN PARA CONFIGURAR EL NIVEL (Define índices 6, 7, 8) ---
+# --- FUNCIÓN PARA CONFIGURAR EL NIVEL (Sin cambios) ---
 def setup_level(player):
     """Crea y posiciona los obstáculos, la meta y los coleccionables del nivel."""
     obstaculo_list = pygame.sprite.Group()
@@ -126,8 +131,37 @@ def setup_level(player):
         
     return obstaculo_list, meta_group, coleccionable_group 
 
+# --- FUNCIÓN DE PRECÁRGALA (Sin cambios) ---
+def preload_level(ventana, character_data):
+    """Carga y devuelve todos los recursos necesarios para run_level, excepto el bucle de juego."""
+    # ... (código preload_level sin cambios) ...
+    ANCHO = ventana.get_width()
+    ALTO = ventana.get_height()
+    
+    # 1. Cargar Fondo
+    try:
+        fondo_nivel = pygame.image.load(PATH_FONDO_NIVEL_1).convert()
+        fondo_nivel = pygame.transform.scale(fondo_nivel, (ANCHO, ALTO))
+    except pygame.error as e:
+        fondo_nivel = pygame.Surface((ANCHO, ALTO)); fondo_nivel.fill(AZUL_FALLBACK)
+        
+    # 2. Inicializar Personaje
+    start_position = (175, 250) 
+    # NOTA: Player debe ser importado (ya lo está)
+    from player import Player
+    player = Player(start_position, character_data, ANCHO, ALTO) 
+    player_group = pygame.sprite.Group(player)
+
+    # 3. Carga de obstáculos y coleccionables
+    obstaculo_group, meta_group, coleccionable_group = setup_level(player) 
+    
+    # 4. Devolver todos los elementos
+    return fondo_nivel, player_group, obstaculo_group, meta_group, coleccionable_group
+
+
 # --- FUNCIÓN DE DIBUJO DE UI (Sin cambios) ---
 def draw_ui(ventana, remaining_time, max_time, collected, required):
+    # ... (código draw_ui sin cambios) ...
     ANCHO, ALTO = ventana.get_size()
     
     # 1. BARRA DE TIEMPO
@@ -160,23 +194,51 @@ def draw_ui(ventana, remaining_time, max_time, collected, required):
     
     ventana.blit(item_surface, (BAR_X, BAR_Y + BAR_HEIGHT + 10))
 
-# --- FUNCIÓN DEL MENÚ DE PAUSA (Sin cambios) ---
+# --------------------------------------------------------------------------
+# 🟢 FUNCIÓN DEL MENÚ DE PAUSA MODIFICADA (Botones intercambiados y BTN_H corregido)
+# --------------------------------------------------------------------------
 def run_pause_menu(ventana):
     ANCHO, ALTO = ventana.get_size()
+    
+    # 1. Fondo Oscuro (para oscurecer el nivel detrás del menú)
     fondo_oscuro = pygame.Surface((ANCHO, ALTO), pygame.SRCALPHA)
     fondo_oscuro.fill(GRIS_OSCURO_PAUSA)
     
-    BTN_W, BTN_H = 120, 50 
+    # 2. Parámetros del Panel del Menú (La caja donde va la imagen)
+    PANEL_W, PANEL_H = 500, 250 
+    CENTER_X = ANCHO // 2
+    PANEL_X = CENTER_X - PANEL_W // 2
+    PANEL_Y = ALTO // 2 - PANEL_H // 2
+    
+    # 3. Cargar y escalar la Imagen de Fondo de Pausa
+    fondo_pausa_img = None
+    try:
+        fondo_pausa_img_orig = pygame.image.load(PATH_FONDO_PAUSA).convert_alpha()
+        fondo_pausa_img = pygame.transform.scale(fondo_pausa_img_orig, (PANEL_W, PANEL_H))
+    except pygame.error as e:
+        print(f"Error cargando fondo de pausa: {e}")
+        fondo_pausa_img = pygame.Surface((PANEL_W, PANEL_H)); 
+        fondo_pausa_img.fill((80, 80, 80)) 
+    
+    # 4. Posicionamiento de Botones (Centrados en el panel)
+    # 🟢 CORRECCIÓN: BTN_H se establece en 50 para que el botón sea visible y funcional.
+    BTN_W, BTN_H = 100, 100 
     GAP = 20 
     TOTAL_MENU_WIDTH = (BTN_W * 3) + (GAP * 2)
-    CENTER_X = ANCHO // 2
-    CENTER_Y = ALTO // 2
-    START_X = CENTER_X - (TOTAL_MENU_WIDTH // 2)
-    BUTTON_Y = CENTER_Y - (BTN_H // 2)
+    
+    START_X = CENTER_X - (TOTAL_MENU_WIDTH // 2) 
+    
+    # Posición Y de los botones (Cerca del fondo del panel, ajusta el 30 si es necesario)
+    BUTTON_Y = PANEL_Y + PANEL_H - BTN_H - 30 
 
-    btn_play = BotonSimple(START_X, BUTTON_Y, BTN_W, BTN_H, PATH_BTN_PLAY, "CONTINUE")
+    # 🟢 SWAP: El botón MENU ahora está en START_X (izquierda)
+    btn_menu = BotonSimple(START_X, BUTTON_Y, BTN_W, BTN_H, PATH_BTN_MENU_PAUSA, "MENU")
+    
+    # RESTART (se mantiene en el centro)
     btn_restart = BotonSimple(START_X + BTN_W + GAP, BUTTON_Y, BTN_W, BTN_H, PATH_BTN_REINICIAR, "REINTENTAR")
-    btn_menu = BotonSimple(START_X + (BTN_W + GAP) * 2, BUTTON_Y, BTN_W, BTN_H, PATH_BTN_MENU_PAUSA, "MENU")
+    
+    # 🟢 SWAP: El botón CONTINUE ahora está en START_X + (BTN_W + GAP) * 2 (derecha)
+    btn_play = BotonSimple(START_X + (BTN_W + GAP) * 2, BUTTON_Y, BTN_W, BTN_H, PATH_BTN_PLAY, "CONTINUE")
     
     botones = [btn_play, btn_restart, btn_menu]
 
@@ -193,15 +255,22 @@ def run_pause_menu(ventana):
             if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                 return "CONTINUE"
 
+        # Dibuja: 1. Oscuridad 2. Imagen del Menú 3. Botones
         ventana.blit(fondo_oscuro, (0, 0))
+        ventana.blit(fondo_pausa_img, (PANEL_X, PANEL_Y))
+        
         for btn in botones:
             btn.draw(ventana)
 
         pygame.display.flip()
         pygame.time.Clock().tick(30) 
 
-# --- FUNCIÓN PRINCIPAL DEL NIVEL (Lógica de Penalización de 3s sin sumar al contador) ---
-def run_level(ventana, character_data, nivel_actual, img_btn_regresar, REGRESAR_RECT):
+# --- FUNCIÓN PRINCIPAL DEL NIVEL MODIFICADA (Sin cambios en lógica) ---
+def run_level(ventana, precargados, img_btn_regresar, REGRESAR_RECT):
+    """Recibe recursos precargados e inicia el bucle del juego."""
+    
+    # Desempaquetar los recursos precargados
+    fondo_nivel, player_group, obstaculo_group, meta_group, coleccionable_group = precargados
     
     ANCHO = ventana.get_width()
     ALTO = ventana.get_height()
@@ -209,20 +278,10 @@ def run_level(ventana, character_data, nivel_actual, img_btn_regresar, REGRESAR_
     
     btn_pausa = BotonSimple(ANCHO - 60, 20, 40, 40, PATH_BTN_PAUSA, "PAUSE")
     
-    start_time = time.time()
+    # --- 1. INICIO DEL JUEGO REAL ---
+    start_time = time.time() 
     is_paused = False 
-    
-    try:
-        fondo_nivel = pygame.image.load(PATH_FONDO_NIVEL_1).convert()
-        fondo_nivel = pygame.transform.scale(fondo_nivel, (ANCHO, ALTO))
-    except pygame.error as e:
-        fondo_nivel = pygame.Surface((ANCHO, ALTO)); fondo_nivel.fill(AZUL_FALLBACK)
-        
-    start_position = (175, 250) 
-    player = Player(start_position, character_data, ANCHO, ALTO) 
-    player_group = pygame.sprite.Group(player)
-
-    obstaculo_group, meta_group, coleccionable_group = setup_level(player) 
+    pause_start_time = 0 # 🟢 Inicializa el contador de inicio de pausa
 
     coleccionables_recogidos = 0 
     elapsed_time = 0 
@@ -238,15 +297,20 @@ def run_level(ventana, character_data, nivel_actual, img_btn_regresar, REGRESAR_
         for event in pygame.event.get(): 
             if event.type == pygame.QUIT:
                 pygame.quit(); sys.exit()
-            if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-                is_paused = not is_paused 
+            # 🟢 Captura el inicio de la pausa
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE and not is_paused: 
+                is_paused = True
+                pause_start_time = time.time()
             if event.type == pygame.MOUSEBUTTONDOWN:
                 mouse_pos = pygame.mouse.get_pos()
-                if btn_pausa.check_click(mouse_pos) == "PAUSE":
+                if btn_pausa.check_click(mouse_pos) == "PAUSE" and not is_paused:
                     is_paused = True
+                    pause_start_time = time.time()
 
-        # 2. LÓGICA DE PAUSA 
+        # 2. LÓGICA DE PAUSA
         if is_paused:
+            
+            # Dibuja el estado congelado del nivel
             ventana.blit(fondo_nivel, (0, 0)) 
             player_group.draw(ventana)
             obstaculo_group.draw(ventana) 
@@ -261,8 +325,11 @@ def run_level(ventana, character_data, nivel_actual, img_btn_regresar, REGRESAR_
             # Lógica post-menú
             if accion_pausa == "CONTINUE":
                 is_paused = False
-                pause_duration = time.time() - start_time - (elapsed_time - penalizacion_total)
-                start_time += pause_duration
+                
+                # ARREGLO DEL TIEMPO: Congela el cronómetro ajustando el tiempo de inicio
+                pause_duration = time.time() - pause_start_time
+                start_time += pause_duration 
+                
             elif accion_pausa == "REINTENTAR":
                 return "REINTENTAR", None, None
             elif accion_pausa == "MENU":
@@ -282,6 +349,7 @@ def run_level(ventana, character_data, nivel_actual, img_btn_regresar, REGRESAR_
                 return "REINTENTAR", None, None
         
         # ACTUALIZAR Y COLISIONES CON COLECCIONABLES
+        player = player_group.sprites()[0] 
         player_group.update(obstaculo_group) 
         
         collected_items = pygame.sprite.spritecollide(player, coleccionable_group, True)
@@ -289,7 +357,7 @@ def run_level(ventana, character_data, nivel_actual, img_btn_regresar, REGRESAR_
             
             #Lógica de penalización: Índices 6, 7 y 8
             if hasattr(item, 'index') and item.index in [6, 7, 8]:
-                penalizacion_total += TIEMPO_PENALIZACION # Suma 3 segundos al tiempo "gastado"
+                penalizacion_total += TIEMPO_PENALIZACION
             else:
                 # Coleccionables normales (Índices 0 a 5)
                 coleccionables_recogidos += 1

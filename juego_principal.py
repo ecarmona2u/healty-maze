@@ -33,6 +33,8 @@ PATH_BTN_REGRESAR = "recursos/boton_regresar.png"
 estado_actual = 'menu' 
 personaje_seleccionado = None
 nivel_actual = None
+# 🟢 NUEVA VARIABLE para almacenar los recursos precargados
+nivel_recursos_precargados = None 
 
 # --- CARGAR IMAGEN DE FONDO DEL MENÚ ---
 menu_background_image = None
@@ -156,30 +158,53 @@ while True:
         if nivel_id:
             nivel_actual = nivel_id
             if nivel_actual == 'nivel_1':
-                estado_actual = 'jugando'
+                # 🟢 CAMBIO: Transiciona a precarga
+                estado_actual = 'precarga_nivel' 
         else:
             estado_actual = 'seleccionar_personaje'
+
+    # 🚨 NUEVO ESTADO CLAVE: Precarga el nivel y muestra la carga modal sobre él
+    elif estado_actual == 'precarga_nivel':
+        
+        # 1. 🟢 PRECÁRGA DEL NIVEL y almacenamiento de recursos
+        nivel_recursos_precargados = level_1.preload_level(surface, personaje_seleccionado)
+        
+        # 2. 🟢 DIBUJAR EL NIVEL COMPLETO (Esto será el fondo de la pantalla de carga)
+        fondo_nivel, player_group, obstaculo_group, meta_group, coleccionable_group = nivel_recursos_precargados
+        
+        surface.blit(fondo_nivel, (0, 0)) 
+        obstaculo_group.draw(surface)
+        coleccionable_group.draw(surface)
+        meta_group.draw(surface)
+        player_group.draw(surface)
+        
+        # 3. 🟢 LLAMADA ÚNICA Y OFICIAL A LA PANTALLA DE CARGA MODAL
+        loading_screen.run_loading_screen(surface)
+        
+        # 4. Pasa al estado de juego real después de la carga
+        estado_actual = 'jugando'
             
     # 3. ESTADO: JUGANDO (NIVEL 1)
     elif estado_actual == 'jugando':
         
-        #PANTALLA DE CARGA IMPLEMENTADA: Se ejecuta una sola vez.
-        loading_screen.run_loading_screen(surface)
-        
-        # level_1.run_level puede devolver "MENU", "NEXT_LEVEL" o "REINTENTAR"
+        # 🟢 CAMBIO: Pasamos los recursos precargados a run_level
         resultado, img_retorno, rect_retorno = level_1.run_level(
             surface, 
-            personaje_seleccionado, 
-            nivel_actual, 
+            nivel_recursos_precargados, 
             img_btn_regresar, 
             REGRESAR_RECT
         )
         
+        # 🟢 LIMPIAR LOS RECURSOS después de terminar (buena práctica)
+        if resultado != 'REINTENTAR':
+            nivel_recursos_precargados = None
+        
         if resultado == 'MENU':
-            estado_actual = 'menu' # Regresar al menú principal
+            estado_actual = 'menu' 
             
-        elif resultado == 'REINTENTAR': #LÓGICA DE REINTENTO
-            pass 
+        elif resultado == 'REINTENTAR':
+            # Si reintenta, volvemos a precargar para un nuevo inicio limpio (el estado 'precarga_nivel' se encarga)
+            estado_actual = 'precarga_nivel'
             
         elif resultado == 'NEXT_LEVEL':
             nivel_en_proceso.run_nivel_en_proceso(surface, img_retorno, rect_retorno)

@@ -6,21 +6,24 @@ import sys
 from player import Player 
 
 # --- CONSTANTES ---
-IMG_SIZE_DISPLAY = (200, 200) # Tamaño para la vista previa
+IMG_SIZE_DISPLAY = (500, 400) # Tamaño para la vista previa
 IMG_SIZE_GAME = (60, 60)     # Tamaño para el juego real (player.py)
 COLOR_RESALTE = (255, 255, 0)
-# COLOR_TEXTO ya no es necesario
 
 # Rutas
 PATH_FONDO_SELECTOR_PERSONAJE = "recursos/fondo_seleccionar_personaje.png"
 PATH_BTN_CONFIRMAR_NORMAL = "recursos/botones/btn_confirmar.png"
 PATH_BTN_REGRESAR = "recursos/botones/btn_regresar.png" 
 PATH_ANIMACIONES = "recursos/animaciones/"
+# 🚨 Nueva constante para las imágenes de menú
+PATH_IMAGENES_MENU = "recursos/imagenes_menu_perso/"
 
-# Datos de Personajes (se mantiene para la lógica)
+# Datos de Personajes (MODIFICADO para incluir la ruta de la imagen de menú)
 PERSONAJES_DATA = {
     "chica": {
         "name": "Chica",
+        # 🚨 Ruta de la imagen para el menú de selección
+        "menu_img": f"{PATH_IMAGENES_MENU}chica_menu.png",
         "anim": {
             "front": [f"{PATH_ANIMACIONES}chica/idle_front_{i:02d}.png" for i in range(1, 5)], 
             "back": [f"{PATH_ANIMACIONES}chica/idle_back_{i:02d}.png" for i in range(1, 5)],
@@ -30,6 +33,8 @@ PERSONAJES_DATA = {
     },
     "chico": {
         "name": "Chico",
+        # 🚨 Ruta de la imagen para el menú de selección
+        "menu_img": f"{PATH_IMAGENES_MENU}chico_menu.png",
         "anim": {
             "front": [f"{PATH_ANIMACIONES}chico/idle_front_{i:02d}.png" for i in range(1, 5)], 
             "back": [f"{PATH_ANIMACIONES}chico/idle_back_{i:02d}.png" for i in range(1, 5)],
@@ -42,7 +47,8 @@ PERSONAJES_DATA = {
 # --- FUNCIONES ---
 
 def cargar_sprites_movimiento(personaje_id, size):
-    """Carga y escala todos los frames de las animaciones de un personaje."""
+    """Carga y escala todos los frames de las animaciones de un personaje.
+       (Se mantiene igual, sigue cargando animaciones para el juego)."""
     sprites = {}
     data = PERSONAJES_DATA[personaje_id]
     
@@ -54,7 +60,7 @@ def cargar_sprites_movimiento(personaje_id, size):
                 img = pygame.transform.scale(img, size)
                 sprites[direction].append(img)
             except pygame.error as e:
-                # 💡 Fallback sin texto de debug
+                # Fallback sin texto de debug
                 fallback_img = pygame.Surface(size, pygame.SRCALPHA)
                 fallback_img.fill((255, 0, 0, 150))
                 sprites[direction].append(fallback_img)
@@ -68,7 +74,6 @@ def run_selector_personaje(ventana):
     clock = pygame.time.Clock()
     
     pygame.font.init()
-    # font_opcion ya no es necesaria
     
     # --- CARGA DE RECURSOS ---
     
@@ -79,14 +84,16 @@ def run_selector_personaje(ventana):
     except pygame.error:
         fondo_selector = pygame.Surface((ANCHO, ALTO)); fondo_selector.fill((10, 10, 50)) 
 
-    # 2. Imágenes de personajes
+    # 2. Imágenes de personajes (MODIFICADO para usar la nueva ruta 'menu_img')
     imagenes_personajes_normal = {}
     for id, data in PERSONAJES_DATA.items():
-        path_primer_frame = data["anim"]["front"][0] 
+        # 🚨 CAMBIO AQUÍ: Usamos la nueva clave 'menu_img' en lugar del primer frame de la animación.
+        path_menu_img = data["menu_img"] 
         try:
-            img_normal = pygame.image.load(path_primer_frame).convert_alpha()
+            img_normal = pygame.image.load(path_menu_img).convert_alpha()
             imagenes_personajes_normal[id] = pygame.transform.scale(img_normal, IMG_SIZE_DISPLAY)
         except pygame.error as e:
+            # Fallback si la imagen estática no se encuentra
             fallback_normal = pygame.Surface(IMG_SIZE_DISPLAY); fallback_normal.fill((255, 100, 100)) 
             imagenes_personajes_normal[id] = fallback_normal
             
@@ -112,8 +119,8 @@ def run_selector_personaje(ventana):
 
     # 4. Coordenadas de los personajes
     personaje_rects = {}
-    pos_chica = (ANCHO // 2 - IMG_SIZE_DISPLAY[0] - 50, ALTO // 2 - IMG_SIZE_DISPLAY[1] // 2)
-    pos_chico = (ANCHO // 2 + 50, ALTO // 2 - IMG_SIZE_DISPLAY[1] // 2)
+    pos_chica = (ANCHO // 2 - IMG_SIZE_DISPLAY[0] - 50, ALTO // 2 - IMG_SIZE_DISPLAY[1] // 2 + 50)
+    pos_chico = (ANCHO // 2 + 50, ALTO // 2 - IMG_SIZE_DISPLAY[1] // 2 + 50)
     
     personaje_rects['chica'] = imagenes_personajes_normal['chica'].get_rect(topleft=pos_chica)
     personaje_rects['chico'] = imagenes_personajes_normal['chico'].get_rect(topleft=pos_chico)
@@ -149,8 +156,6 @@ def run_selector_personaje(ventana):
         # --- DIBUJO ---
         ventana.blit(fondo_selector, (0, 0))
 
-        # 💡 Título: ELIMINADO
-
         # Dibujar personajes
         for id, img in imagenes_personajes_normal.items():
             rect = personaje_rects[id]
@@ -161,9 +166,6 @@ def run_selector_personaje(ventana):
             
             ventana.blit(img, rect)
             
-            # 💡 Nombre del personaje: ELIMINADO
-
-
         # Dibujar botones estáticos
         ventana.blit(img_regresar, REGRESAR_RECT)
         ventana.blit(img_confirmar, CONFIRMAR_RECT)
@@ -176,6 +178,7 @@ def run_selector_personaje(ventana):
         clock.tick(60)
         
     # --- SALIDA DEL BUCLE ---
+    # Esto sigue cargando las animaciones (sprites) para el juego.
     sprites_movimiento = cargar_sprites_movimiento(personaje_seleccionado, IMG_SIZE_GAME)
     
     return {
