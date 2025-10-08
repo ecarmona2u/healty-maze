@@ -106,10 +106,10 @@ def setup_level(player):
     # COLECCIONABLES NORMALES (Necesitamos 6 tipos únicos: índices 0 a 5)
     coleccionables_coords = [
         (24, 186, 0),    # Tipo 0
-        (347, 217, 4),    # Tipo 1
-        (257, 644, 5),    # Tipo 2
-        (595, 628, 3),    # Tipo 3
-        (807, 391, 2),    # Tipo 4
+        (347, 217, 2),    # Tipo 1
+        (257, 644, 1),    # Tipo 2
+        (595, 628, 2),    # Tipo 3
+        (807, 391, 0),    # Tipo 4
         (574, 191, 1)     # Tipo 5
     ]
 
@@ -119,7 +119,7 @@ def setup_level(player):
         (186, 510, 7),  
         (974, 648, 8),
         (1192, 510, 7),
-        (1021, 277, 6),
+        (1021, 265, 6),
         (1207, 205, 8)
     ]
 

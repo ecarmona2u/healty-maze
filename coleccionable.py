@@ -13,9 +13,9 @@ PATH_COLECTABLE_5 = "recursos/coleccionables/colectable_5.png"
 PATH_COLECTABLE_6 = "recursos/coleccionables/colectable_6.png"
 
 # Rutas de las 3 imágenes de penalización (índices 6 a 8)
-PATH_PENALIZACION_1 = "recursos/malus/malus_1.png" 
-PATH_PENALIZACION_2 = "recursos/malus/malus_2.png" 
-PATH_PENALIZACION_3 = "recursos/malus/malus_3.png" 
+PATH_PENALIZACION_1 = "recursos/malus/malus_4.png" 
+PATH_PENALIZACION_2 = "recursos/malus/malus_5.png" 
+PATH_PENALIZACION_3 = "recursos/malus/malus_6.png" 
 
 # --- CONSTANTE DE TAMAÑOS (Nueva adición para personalizar tamaños por índice) ---
 # Puedes cambiar los tamaños predeterminados aquí. Si un índice no está listado, usará (50, 50).
@@ -29,7 +29,7 @@ IMAGE_SIZES = {
     5: (50, 50),
     
     # Penalizaciones (índices 6-8)
-    6: (40, 20), # Ejemplo: Más grande para que destaque
+    6: (40, 50), # Ejemplo: Más grande para que destaque
     7: (40, 50),
     8: (40, 50),
 }
