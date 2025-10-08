@@ -1,4 +1,4 @@
-# loading_screen.py
+# loading_screen.py (LIMPIO Y TRANSPARENTE)
 
 import pygame
 import sys
@@ -19,7 +19,7 @@ MODAL_HEIGHT = 500
 def run_loading_screen(ventana):
     """
     Muestra la imagen de fondo de carga escalada en un cuadro pequeño (modal) 
-    en el centro de la ventana, sobre el nivel ya dibujado.
+    en el centro de la ventana, de forma transparente.
     """
     
     ANCHO = ventana.get_width()
@@ -34,8 +34,9 @@ def run_loading_screen(ventana):
     except pygame.error as e:
         # Fallback si la imagen no se encuentra (cuadro rojo sólido)
         print(f"Error cargando fondo de carga: {e}. Usando fallback.")
+        # La imagen de fallback también debe usar SRCALPHA si quieres transparencia
         imagen_modal = pygame.Surface((MODAL_WIDTH, MODAL_HEIGHT), pygame.SRCALPHA); 
-        imagen_modal.fill((255, 0, 0, 200)) # Rojo semi-transparente
+        imagen_modal.fill((255, 0, 0, 0)) # Rojo totalmente transparente (A=0)
         
     
     # Calculamos la posición de la imagen para centrarla
@@ -59,19 +60,20 @@ def run_loading_screen(ventana):
                 mouse_clicked = True
 
         # --- Lógica de Salida ---
-        # 1. Si ha pasado el tiempo mínimo, salimos.
         if elapsed_time >= MIN_DISPLAY_TIME:
             running = False
             
-        # 2. Si el usuario hace clic Y ya pasaron 0.5s para evitar cierres accidentales.
         if mouse_clicked and elapsed_time >= 0.5:
              running = False
             
         # --- Dibujo del Modal ---
+        #IMPORTANTE: NO usamos ventana.fill(). El fondo (el nivel 1) se mantiene visible.
+        
         # Dibuja la imagen modal en la posición central
+        # Si la imagen modal tiene transparencia (convert_alpha), el fondo del nivel se verá.
         ventana.blit(imagen_modal, MODAL_POS)
 
         pygame.display.flip()
         clock.tick(60)
         
-    return True 
+    return True

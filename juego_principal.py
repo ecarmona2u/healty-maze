@@ -1,3 +1,5 @@
+# juego_principal.py (MODIFICADO para integrar audio_manager)
+
 import pygame
 import sys 
 import level_1 
@@ -7,6 +9,8 @@ import ajustes
 import nivel_en_proceso 
 from ganaste_entre_nivel import run_pantalla_ganaste 
 import loading_screen 
+import tutorial_level 
+import audio_manager 
 
 # --- CONFIGURACIÓN GLOBAL ---
 pygame.init()
@@ -19,21 +23,19 @@ clock = pygame.time.Clock()
 
 # --- CONSTANTES ---
 AZUL = (50, 50, 200)
+COLOR_FONDO_NEGRO = (0, 0, 0) 
 
-# Paths de las imágenes
+# Paths de las imágenes (DEBEN existir)
 PATH_FONDO_MENU = "recursos/fondo_menu.png" 
 PATH_INICIAR = "recursos/boton_iniciar.png"
 PATH_SALIR = "recursos/boton_salir.png"
 PATH_AJUSTES = "recursos/boton_ajustes.png" 
-
-# 💡 AÑADE LA CARGA DE RECURSOS PARA EL BOTÓN DE REGRESO
 PATH_BTN_REGRESAR = "recursos/boton_regresar.png" 
 
 # --- ESTADO DE JUEGO ---
 estado_actual = 'menu' 
 personaje_seleccionado = None
 nivel_actual = None
-# 🟢 NUEVA VARIABLE para almacenar los recursos precargados
 nivel_recursos_precargados = None 
 
 # --- CARGAR IMAGEN DE FONDO DEL MENÚ ---
@@ -52,7 +54,7 @@ botones_data = [
     {'action': 'salir', 'pos': (1215, 10), 'path': PATH_SALIR, 'size': (60, 60)},
 ]
 
-# Carga del botón de regreso (Necesario para pasar a run_level)
+# Carga del botón de regreso 
 img_btn_regresar = None
 REGRESAR_RECT = None
 try:
@@ -81,10 +83,7 @@ def cargar_y_preparar_botones(data):
 
 button_assets = cargar_y_preparar_botones(botones_data)
 
-# -------------------------------------------------------------------------
 # FUNCIONES DE LÓGICA Y DIBUJO
-# -------------------------------------------------------------------------
-
 def dibujar_menu(ventana, mouse_pos, assets, background_image):
     ventana.blit(background_image, (0, 0)) 
     for action, asset in assets.items():
@@ -109,85 +108,98 @@ def manejar_clic_menu(mouse_pos, assets):
                 pygame.quit()
                 sys.exit()
 
-# -------------------------------------------------------------------------
 # BUCLE PRINCIPAL DEL JUEGO (Máquina de Estados)
-# -------------------------------------------------------------------------
-
 while True:
     mouse_pos = pygame.mouse.get_pos()
-    event_list = pygame.event.get() # Se obtienen todos los eventos una sola vez por frame
+    event_list = pygame.event.get() 
 
     for event in event_list:
         if event.type == pygame.QUIT:
             pygame.quit()
             sys.exit()
         
-        #MANEJO DE EVENTOS ESPECÍFICO POR ESTADO
         if estado_actual == 'menu' and event.type == pygame.MOUSEBUTTONDOWN:
             manejar_clic_menu(mouse_pos, button_assets)
 
-# -------------------------------------------------------------------------
-# GESTIÓN DE ESTADOS Y DIBUJO
-# -------------------------------------------------------------------------
-
-    if estado_actual == 'menu':
-        dibujar_menu(surface, mouse_pos, button_assets, menu_background_image)
-        
-    elif estado_actual == 'ajustes':
-        dibujar_menu(surface, mouse_pos, button_assets, menu_background_image) 
-        
+# GESTIÓN DE ESTADOS Y DIBUJO    
+    # Manejo de AJUSTES
+    if estado_actual == 'ajustes':
+        # La música sigue sonando ya que solo se abre un modal (no hay cambio de pista)
         accion = ajustes.gestionar_ajustes_modal(surface, event_list, mouse_pos)
         
-        if accion == 'cerrar':
+        if accion == 'cerrar' or accion == 'guardar': # El modal ya solo usa 'cerrar'
             estado_actual = 'menu'
+        
+        pygame.display.flip()
+        clock.tick(60)
+        continue 
 
+    elif estado_actual == 'menu':
+        audio_manager.play_music('menu_principal') #INICIA MÚSICA DEL MENÚ
+        dibujar_menu(surface, mouse_pos, button_assets, menu_background_image)
+        
     # 1. ESTADO: SELECCIÓN DE PERSONAJE
     elif estado_actual == 'seleccionar_personaje':
+        audio_manager.play_music('selector') #INICIA MÚSICA DEL SELECTOR
         personaje_data_result = selector_personaje.run_selector_personaje(surface) 
         
         if personaje_data_result:
             personaje_seleccionado = personaje_data_result
             estado_actual = 'seleccionar_nivel'
         else:
-            estado_actual = 'menu'
+            estado_actual = 'menu' #Vuelve al menú principal
+            audio_manager.play_music('menu_principal') # Cambia la pista de nuevo
 
     # 2. ESTADO: SELECCIÓN DE NIVEL
     elif estado_actual == 'seleccionar_nivel':
-        nivel_id = selector_nivel.run_selector_nivel(surface, personaje_seleccionado['id'])
+        audio_manager.play_music('selector') #MÚSICA DE SELECTOR CONTINÚA
+        nivel_id = selector_nivel.run_selector_nivel(surface, personaje_seleccionado) 
         
         if nivel_id:
             nivel_actual = nivel_id
             if nivel_actual == 'nivel_1':
-                # 🟢 CAMBIO: Transiciona a precarga
                 estado_actual = 'precarga_nivel' 
+            elif nivel_actual == 'tutorial':
+                estado_actual = 'precarga_tutorial'
         else:
             estado_actual = 'seleccionar_personaje'
 
-    # 🚨 NUEVO ESTADO CLAVE: Precarga el nivel y muestra la carga modal sobre él
+    #ESTADO: Precarga NIVEL 1
     elif estado_actual == 'precarga_nivel':
+        audio_manager.play_music('nivel_1') #NICIA MÚSICA DEL NIVEL
         
-        # 1. 🟢 PRECÁRGA DEL NIVEL y almacenamiento de recursos
+        # 1. Precarga los recursos
         nivel_recursos_precargados = level_1.preload_level(surface, personaje_seleccionado)
         
-        # 2. 🟢 DIBUJAR EL NIVEL COMPLETO (Esto será el fondo de la pantalla de carga)
-        fondo_nivel, player_group, obstaculo_group, meta_group, coleccionable_group = nivel_recursos_precargados
+        # 2. Dibuja el fondo y la pantalla de carga
+        try:
+            fondo_nivel_1 = nivel_recursos_precargados[0]
+            surface.blit(fondo_nivel_1, (0, 0)) 
+            pygame.display.flip()
+        except (TypeError, IndexError):
+            surface.fill(COLOR_FONDO_NEGRO)
+            pygame.display.flip()
         
-        surface.blit(fondo_nivel, (0, 0)) 
-        obstaculo_group.draw(surface)
-        coleccionable_group.draw(surface)
-        meta_group.draw(surface)
-        player_group.draw(surface)
-        
-        # 3. 🟢 LLAMADA ÚNICA Y OFICIAL A LA PANTALLA DE CARGA MODAL
         loading_screen.run_loading_screen(surface)
         
-        # 4. Pasa al estado de juego real después de la carga
         estado_actual = 'jugando'
+
+    #ESTADO: Precarga TUTORIAL
+    elif estado_actual == 'precarga_tutorial':
+        audio_manager.play_music('tutorial') #INICIA MÚSICA DEL TUTORIAL
+        
+        # 1. Precarga los recursos
+        nivel_recursos_precargados = tutorial_level.preload_tutorial_level(surface, personaje_seleccionado)
+        
+        # 2. Muestra la pantalla de carga 
+        loading_screen.run_loading_screen(surface)
+        
+        estado_actual = 'jugando_tutorial'
             
     # 3. ESTADO: JUGANDO (NIVEL 1)
     elif estado_actual == 'jugando':
+        # La música ya fue iniciada en 'precarga_nivel'
         
-        # 🟢 CAMBIO: Pasamos los recursos precargados a run_level
         resultado, img_retorno, rect_retorno = level_1.run_level(
             surface, 
             nivel_recursos_precargados, 
@@ -195,20 +207,66 @@ while True:
             REGRESAR_RECT
         )
         
-        # 🟢 LIMPIAR LOS RECURSOS después de terminar (buena práctica)
-        if resultado != 'REINTENTAR':
+        if resultado not in ('REINTENTAR', 'NEXT_LEVEL'):
             nivel_recursos_precargados = None
-        
+            
         if resultado == 'MENU':
+            audio_manager.stop_music() #DETENER AL SALIR
             estado_actual = 'menu' 
             
         elif resultado == 'REINTENTAR':
-            # Si reintenta, volvemos a precargar para un nuevo inicio limpio (el estado 'precarga_nivel' se encarga)
+            audio_manager.stop_music() #DETENER ANTES DE RECARGAR
             estado_actual = 'precarga_nivel'
             
         elif resultado == 'NEXT_LEVEL':
+            audio_manager.stop_music() #DETENER ANTES DE LA PANTALLA DE GANASTE
             nivel_en_proceso.run_nivel_en_proceso(surface, img_retorno, rect_retorno)
             estado_actual = 'seleccionar_nivel' 
+        
+        elif resultado == 'SELECT_CHARACTER': 
+            audio_manager.stop_music() #DETENER AL CAMBIAR DE ESTADO
+            personaje_seleccionado = None
+            nivel_actual = None
+            estado_actual = 'seleccionar_personaje'
+            
+        elif resultado == 'SELECTOR_NIVEL':
+            audio_manager.stop_music() #DETENER AL CAMBIAR DE ESTADO
+            estado_actual = 'seleccionar_nivel'
 
-    pygame.display.flip()
+
+    #ESTADO: JUGANDO (TUTORIAL) 
+    elif estado_actual == 'jugando_tutorial':
+        # La música ya fue iniciada en 'precarga_tutorial'
+        
+        resultado, img_retorno, rect_retorno = tutorial_level.run_tutorial_level(
+            surface, 
+            nivel_recursos_precargados, 
+            img_btn_regresar, 
+            REGRESAR_RECT
+        )
+        
+        if resultado != 'REINTENTAR':
+            nivel_recursos_precargados = None
+        
+        if resultado == 'SELECTOR_PERSONAJE' or resultado == 'SELECTOR_NIVEL': 
+            audio_manager.stop_music() #DETENER AL SALIR
+            estado_actual = 'seleccionar_nivel' 
+            
+        elif resultado == 'REINTENTAR':
+            audio_manager.stop_music() #DETENER ANTES DE RECARGAR
+            estado_actual = 'precarga_tutorial'
+
+        elif resultado == 'MENU':
+            audio_manager.stop_music() #DETENER AL SALIR
+            estado_actual = 'menu' 
+
+        else:
+            audio_manager.stop_music() #DETENER COMO FALLBACK
+            estado_actual = 'menu'
+
+
+    # Solo hacemos flip si no estamos en un estado bloqueante que ya lo hizo
+    if estado_actual not in ['precarga_nivel', 'precarga_tutorial']:
+        pygame.display.flip()
+        
     clock.tick(60)

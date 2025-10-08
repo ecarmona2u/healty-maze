@@ -1,52 +1,50 @@
-# ganaste_entre_nivel.py (Pantalla de victoria con imagen de fondo y botones)
+# ganaste_entre_nivel.py 
 
 import pygame
 import sys
 
-# --- CONSTANTES ---
-PATH_FONDO_VICTORIA = "recursos/fondo_victoria.png"
-# Paths de las imágenes de botones
+# --- CONSTANTES DE RECURSOS ---
+PATH_FONDO = "recursos/fondo_victoria.png"
 PATH_BTN_NEXT = "recursos/btn_siguiente.png" 
-PATH_BTN_MENU = "recursos/botones/btn_menu.png"     
+PATH_BTN_MENU = "recursos/btn_menu.png"     
 
 BLANCO = (255, 255, 255)
 
-# --- VALORES DE RETORNO (para comunicación con juego_principal.py) ---
+# --- VALORES DE RETORNO ---
 RETURN_NEXT_LEVEL = "NEXT_LEVEL"
-RETURN_MENU = "MENU"
+RETURN_SELECTOR_NIVEL = "SELECTOR_NIVEL" 
+RETURN_REINTENTAR = "REINTENTAR" 
 
 
-# =========================================================
-# CLASE BOTON (Sin Cambios, ya acepta ancho y alto)
-# =========================================================
+# CLASE BOTON (Necesaria para pantallas de Ganar y Perder)
 class Boton:
+    """Clase para crear botones con imagen y acción."""
     def __init__(self, x, y, ancho, alto, texto, accion, path_imagen):
         
         self.accion = accion
         
-        # 1. Cargar y escalar la única imagen con el ancho y alto específicos
+        # Carga de la imagen
         try:
             img_base = pygame.image.load(path_imagen).convert_alpha()
             self.img_base = pygame.transform.scale(img_base, (ancho, alto))
-        except pygame.error as e:
-            # Fallback en caso de que la imagen no cargue
-            print(f"Error cargando botón de imagen: {e}. Usando fallback.")
-            self.img_base = pygame.Surface((ancho, alto)); self.img_base.fill((100, 100, 100))
-            
-        # 2. Definir el rectángulo de colisión y posición
+        except pygame.error:
+            # Fallback a un color sólido si la imagen no se carga
+            self.img_base = pygame.Surface((ancho, alto))
+            self.img_base.fill((0, 150, 0)) # Verde para victoria
+
         self.rect = self.img_base.get_rect(topleft=(x, y))
         
-
     def draw(self, surface):
         action = False
         pos = pygame.mouse.get_pos()
         
-        # 1. Detectar clic (la única lógica de interacción)
+        # Comprobar colisión y clic
         if self.rect.collidepoint(pos):
+            # Dibujar un borde o efecto de hover si es necesario
+            
             if pygame.mouse.get_pressed()[0] == 1:
                 action = True
 
-        # 2. Dibujar la imagen del botón
         surface.blit(self.img_base, self.rect) 
         
         if action:
@@ -55,88 +53,68 @@ class Boton:
         return None
 
 
-# =========================================================
-# FUNCIÓN PRINCIPAL DE LA PANTALLA
-# =========================================================
+# FUNCIÓN PRINCIPAL DE LA PANTALLA (run_pantalla_ganaste)
 def run_pantalla_ganaste(ventana, img_btn_regresar=None, REGRESAR_RECT=None): 
     
-    ANCHO = ventana.get_width()
-    ALTO = ventana.get_height()
+    ANCHO, ALTO = ventana.get_size()
     clock = pygame.time.Clock()
     
-    # 1. Cargar Fondo de Victoria
+    # 1. Cargar Fondo
     try:
-        fondo_victoria = pygame.image.load(PATH_FONDO_VICTORIA).convert()
-        fondo_victoria = pygame.transform.scale(fondo_victoria, (ANCHO, ALTO))
-    except pygame.error as e:
-        print(f"Error cargando fondo de victoria: {e}")
-        fondo_victoria = pygame.Surface((ANCHO, ALTO)); fondo_victoria.fill((50, 50, 50))
+        fondo = pygame.image.load(PATH_FONDO).convert()
+        fondo = pygame.transform.scale(fondo, (ANCHO, ALTO))
+    except pygame.error:
+        print(f"Error cargando fondo: {PATH_FONDO}. Usando color sólido.")
+        fondo = pygame.Surface((ANCHO, ALTO)); fondo.fill((50, 50, 50))
 
-    # 2. Crear Botones con tamaños y posiciones individuales
+    # 2. Configuración Común de Botones
+    BTN_W_GRANDE, BTN_H_GRANDE = 300, 90 
+    BTN_W_PEQUENO, BTN_H_PEQUENO = 90, 90 
+    BTN_Y = 500
     
-    # ----------------------------------------------------
-    # CONFIGURACIÓN DEL BOTÓN 1: SIGUIENTE NIVEL
-    # ----------------------------------------------------
-    #TAMAÑO ESPECÍFICO PARA EL BOTÓN DE SIGUIENTE NIVEL
-    next_ancho = 300 
-    next_alto = 90
-    
-    #POSICIÓN ESPECÍFICA (Centrado en X, 100 píxeles por encima del centro Y)
-    next_x = (600)
-    next_y = (500) 
-    
+    # 3. Creación de Botones
+
+    # Botón 1: SIGUIENTE NIVEL (Grande, Derecha)
     btn_siguiente = Boton(
-        next_x, 
-        next_y, 
-        next_ancho, 
-        next_alto, 
+        600, BTN_Y, BTN_W_GRANDE, BTN_H_GRANDE, 
         "SIGUIENTE NIVEL", 
         RETURN_NEXT_LEVEL,
         PATH_BTN_NEXT 
     )
     
-    # ----------------------------------------------------
-    # CONFIGURACIÓN DEL BOTÓN 2: IR AL MENÚ
-    # ----------------------------------------------------
-    # ESPECÍFICO PARA EL BOTÓN DE MENÚ (más pequeño)
-    menu_ancho = 90 
-    menu_alto = 90
-    
-    #ESPECÍFICA (Centrado en X, 50 píxeles por debajo del centro Y)
-    menu_x = (400)
-    menu_y = (500) 
-    
+    # Botón 2: SELECTOR DE NIVEL (Pequeño, Izquierda)
     btn_menu = Boton(
-        menu_x, 
-        menu_y, 
-        menu_ancho, 
-        menu_alto, 
-        "MENÚ PRINCIPAL", 
-        RETURN_MENU,
+        400, BTN_Y, BTN_W_PEQUENO, BTN_H_PEQUENO, 
+        "NIVELES", 
+        RETURN_SELECTOR_NIVEL, # <-- Devuelve al selector de nivel
         PATH_BTN_MENU 
     )
 
+    # 4. Bucle principal
     running = True
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit(); sys.exit()
             
-        ventana.blit(fondo_victoria, (0, 0))
+        ventana.blit(fondo, (0, 0))
 
+        # Dibujo y Lógica
         accion_siguiente = btn_siguiente.draw(ventana)
         accion_menu = btn_menu.draw(ventana)
         
-        # 6. Devolver el resultado de la acción
         if accion_siguiente:
             running = False
-            return RETURN_NEXT_LEVEL, img_btn_regresar, REGRESAR_RECT
+            # Devuelve 3 valores
+            return RETURN_NEXT_LEVEL, img_btn_regresar, REGRESAR_RECT 
         
         if accion_menu:
             running = False
-            return RETURN_MENU, None, None 
+            # Devuelve 3 valores
+            return RETURN_SELECTOR_NIVEL, None, None 
 
         pygame.display.flip()
         clock.tick(60)
         
-    return RETURN_MENU, None, None
+    # Fallback
+    return RETURN_SELECTOR_NIVEL, None, None

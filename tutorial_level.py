@@ -1,41 +1,39 @@
-# level_1.py 
+# tutorial_level.py (Código corregido para la navegación del botón de menú)
 
 import pygame
+# Asegúrate de que todas estas clases existan en sus respectivos archivos
 from player import Player 
 from obstaculo import Obstaculo 
 from meta import Meta 
-from ganaste_entre_nivel import run_pantalla_ganaste 
-from pantalla_derrota import run_pantalla_derrota
+# NOTA: Se asume que tutorial_win_screen.py devuelve 'SELECTOR_NIVEL' en caso de éxito/menú
+from tutorial_win_screen import run_pantalla_tutorial_win, RETURN_LEVEL_1, RETURN_MENU 
 from coleccionable import Coleccionable 
 import sys
 import time 
-import loading_screen 
 
-# --- CONSTANTES ---
-PATH_FONDO_NIVEL_1 = "recursos/FondoNivel1.jpg" 
+# --- CONSTANTES DE NIVEL ESPECÍFICAS DEL TUTORIAL ---
+PATH_FONDO_TUTORIAL = "recursos/FondoTutorial.png" 
 AZUL_FALLBACK = (50, 50, 150)
-NUM_COLECCIONABLES_REQUERIDOS = 6 
+NUM_COLECCIONABLES_REQUERIDOS = 2 
 TIEMPO_LIMITE_SEGUNDOS = 30
-TIEMPO_PENALIZACION = 3
+TIEMPO_PENALIZACION = 3 
 
-# --- CONSTANTES DE PAUSA ---
+# --- CONSTANTES DE PAUSA (DEBEN existir) ---
 PATH_BTN_PAUSA = "recursos/btn_pausa.png"
+PATH_FONDO_PAUSA = "recursos/fondo_menu_pausa.png" 
 PATH_BTN_PLAY = "recursos/btn_play.png"
 PATH_BTN_MENU_PAUSA = "recursos/btn_menu.png"
 PATH_BTN_REINICIAR = "recursos/btn_reiniciar.png"
-
-PATH_FONDO_PAUSA = "recursos/fondo_menu_pausa.png" 
-
-# Colores para la UI
+# Colores UI
 VERDE_BARRA = (0, 200, 0)
 ROJO_BARRA = (200, 0, 0)
 GRIS_FONDO = (50, 50, 50)
 BLANCO = (255, 255, 255)
 AMARILLO = (255, 255, 0)
+# Gris oscuro semi-transparente para el fondo de pausa (RGBA)
 GRIS_OSCURO_PAUSA = (0,0,0,0) 
 
-
-# --- CLASE BOTON SIMPLE (Sin cambios) ---
+# --- CLASE BOTON SIMPLE (Reutilizada) ---
 class BotonSimple:
     def __init__(self, x, y, width, height, path, action):
         self.action = action
@@ -58,41 +56,29 @@ class BotonSimple:
             return self.action
         return None
 
-# --- FUNCIÓN PARA CONFIGURAR EL NIVEL (Sin cambios) ---
-def setup_level(player):
-    """Crea y posiciona los obstáculos, la meta y los coleccionables del nivel."""
+# --- FUNCIÓN PARA CONFIGURAR EL NIVEL TUTORIAL (SIN CAMBIOS) ---
+def setup_tutorial_level(player):
+    """Crea y posiciona los elementos para el nivel de tutorial."""
     obstaculo_list = pygame.sprite.Group()
     meta_group = pygame.sprite.Group() 
     coleccionable_group = pygame.sprite.Group() 
     
-    # DEFINICIÓN DE OBSTÁCULOS
+    # MUROS SIMPLES para el tutorial
     obstaculos_coords = [
         (0, 110, 955, 20), 
         (1116, 110, 164, 20), 
         (0, 129, 13, 700), 
         (1262, 129, 16, 700), 
         (0, 700, 1280, 20), 
-        (94, 213, 73, 72), 
-        (94, 213, 229, 20), 
-        (251, 213, 73, 178),
-        (13, 371, 240, 20),
-        (488, 128, 73, 309), 
-        (551, 417, 246, 20), 
-        (724, 417, 73, 174),
-        (330, 519, 467, 20), 
-        (330, 534, 73, 55), 
-        (93, 571, 310, 20),
-        (93, 467, 73, 124), 
-        (488, 639, 73, 67),
-        (1116, 127, 73, 105), 
-        (646, 212, 472, 20), 
-        (646, 225, 73, 110),
-        (711, 315, 321, 20),
-        (1116, 315, 73, 122), 
-        (880, 417, 240, 20), 
-        (880, 432, 73, 157),
-        (1188, 571, 73, 20), 
-        (1032, 572, 73, 132)
+        (14, 207, 707, 20),
+        (648, 224, 73, 310),
+        (716, 514, 91, 20),
+        (803, 119, 73, 415),
+        (14, 322, 547, 20),
+        (489, 337, 73, 363),
+        (971, 222, 73, 478),
+        (1036, 222, 227, 20)
+
     ]
     
     for x, y, w, h in obstaculos_coords:
@@ -103,24 +89,15 @@ def setup_level(player):
     meta = Meta(955, 100, 160, 17)
     meta_group.add(meta)
     
-    # COLECCIONABLES NORMALES (Necesitamos 6 tipos únicos: índices 0 a 5)
+    # COLECCIONABLES NORMALES (índices 0 y 1)
     coleccionables_coords = [
-        (24, 186, 0),    # Tipo 0
-        (347, 217, 4),    # Tipo 1
-        (257, 644, 5),    # Tipo 2
-        (595, 628, 3),    # Tipo 3
-        (807, 391, 2),    # Tipo 4
-        (574, 191, 1)     # Tipo 5
+        (576, 295, 0),  
+        (894, 219, 2),  
     ]
 
-    # COLECCIONABLES DE PENALIZACIÓN (Índices 6, 7 y 8)
+    # COLECCIONABLES DE PENALIZACIÓN (índice 6)
     penalizacion_coords = [
-        (430, 416, 6), 
-        (186, 510, 7),  
-        (974, 648, 8),
-        (1192, 510, 7),
-        (1021, 277, 6),
-        (1207, 205, 8)
+        (725, 639, 6), 
     ]
 
     todos_coleccionables = coleccionables_coords + penalizacion_coords
@@ -130,36 +107,34 @@ def setup_level(player):
         
     return obstaculo_list, meta_group, coleccionable_group 
 
-# --- FUNCIÓN DE PRECÁRGALA (Sin cambios) ---
-def preload_level(ventana, character_data):
+# --- FUNCIÓN DE PRECÁRGALA (SIN CAMBIOS) ---
+def preload_tutorial_level(ventana, character_data):
+    """Carga y devuelve todos los recursos necesarios para el tutorial."""
     ANCHO = ventana.get_width()
     ALTO = ventana.get_height()
     
     # 1. Cargar Fondo
     try:
-        fondo_nivel = pygame.image.load(PATH_FONDO_NIVEL_1).convert()
+        fondo_nivel = pygame.image.load(PATH_FONDO_TUTORIAL).convert()
         fondo_nivel = pygame.transform.scale(fondo_nivel, (ANCHO, ALTO))
     except pygame.error as e:
         fondo_nivel = pygame.Surface((ANCHO, ALTO)); fondo_nivel.fill(AZUL_FALLBACK)
         
     # 2. Inicializar Personaje
-    start_position = (175, 250) 
-    from player import Player
+    start_position = (30, 250) 
     player = Player(start_position, character_data, ANCHO, ALTO) 
     player_group = pygame.sprite.Group(player)
 
     # 3. Carga de obstáculos y coleccionables
-    obstaculo_group, meta_group, coleccionable_group = setup_level(player) 
+    obstaculo_group, meta_group, coleccionable_group = setup_tutorial_level(player) 
     
-    # 4. Devolver todos los elementos
     return fondo_nivel, player_group, obstaculo_group, meta_group, coleccionable_group
 
 
-# --- FUNCIÓN DE DIBUJO DE UI (Sin cambios) ---
+# --- FUNCIÓN DE DIBUJO DE UI (SIN CAMBIOS) ---
 def draw_ui(ventana, remaining_time, max_time, collected, required):
     ANCHO, ALTO = ventana.get_size()
     
-    # 1. BARRA DE TIEMPO
     BAR_WIDTH = 300
     BAR_HEIGHT = 20
     BAR_X = 20
@@ -168,18 +143,16 @@ def draw_ui(ventana, remaining_time, max_time, collected, required):
     time_ratio = remaining_time / max_time
     current_width = int(BAR_WIDTH * time_ratio)
     
-    bar_color = VERDE_BARRA if remaining_time > 5 else ROJO_BARRA
+    bar_color = VERDE_BARRA if remaining_time > 10 else ROJO_BARRA
 
     pygame.draw.rect(ventana, GRIS_FONDO, (BAR_X, BAR_Y, BAR_WIDTH, BAR_HEIGHT), 0, 5)
     pygame.draw.rect(ventana, bar_color, (BAR_X, BAR_Y, current_width, BAR_HEIGHT), 0, 5)
-    pygame.draw.rect(ventana, BLANCO, (BAR_X, BAR_Y, BAR_WIDTH, BAR_HEIGHT), 2, 5)
 
     font_timer = pygame.font.SysFont('Arial', 20, bold=True)
     time_text = f"{int(remaining_time)}"
     timer_surface = font_timer.render(time_text, True, BLANCO)
     ventana.blit(timer_surface, (BAR_X + BAR_WIDTH + 10, BAR_Y))
     
-    # 2. CONTADOR DE OBJETOS
     font_items = pygame.font.SysFont('Arial', 30, bold=True)
     item_text = f"Objetos: {collected} / {required}"
     
@@ -189,40 +162,32 @@ def draw_ui(ventana, remaining_time, max_time, collected, required):
     
     ventana.blit(item_surface, (BAR_X, BAR_Y + BAR_HEIGHT + 10))
 
-# --------------------------------------------------------------------------
-# FUNCIÓN DEL MENÚ DE PAUSA
-# --------------------------------------------------------------------------
+# --- FUNCIÓN DEL MENÚ DE PAUSA (VERIFICADA) ---
 def run_pause_menu(ventana):
     ANCHO, ALTO = ventana.get_size()
-    
-    # 1. Fondo Oscuro 
     fondo_oscuro = pygame.Surface((ANCHO, ALTO), pygame.SRCALPHA)
-    fondo_oscuro.fill(GRIS_OSCURO_PAUSA)
+    fondo_oscuro.fill(GRIS_OSCURO_PAUSA) 
     
-    # 2. Parámetros del Panel del Menú 
     PANEL_W, PANEL_H = 500, 250 
     CENTER_X = ANCHO // 2
     PANEL_X = CENTER_X - PANEL_W // 2
     PANEL_Y = ALTO // 2 - PANEL_H // 2
     
-    # 3. Cargar y escalar la Imagen de Fondo de Pausa
-    fondo_pausa_img = None
+    COLOR_FIJO_PAUSA = (120, 120, 120) 
+    
     try:
         fondo_pausa_img_orig = pygame.image.load(PATH_FONDO_PAUSA).convert_alpha()
         fondo_pausa_img = pygame.transform.scale(fondo_pausa_img_orig, (PANEL_W, PANEL_H))
-    except pygame.error as e:
-        fondo_pausa_img = pygame.Surface((PANEL_W, PANEL_H)); 
-        fondo_pausa_img.fill((80, 80, 80)) 
-    
-    # 4. Posicionamiento de Botones
+    except pygame.error:
+        fondo_pausa_img = pygame.Surface((PANEL_W, PANEL_H)); fondo_pausa_img.fill(COLOR_FIJO_PAUSA)
+        
     BTN_W, BTN_H = 100, 100 
     GAP = 20 
     TOTAL_MENU_WIDTH = (BTN_W * 3) + (GAP * 2)
-    
     START_X = CENTER_X - (TOTAL_MENU_WIDTH // 2) 
     BUTTON_Y = PANEL_Y + PANEL_H - BTN_H - 30 
 
-    #CAMBIO CLAVE AQUÍ: Ahora devuelve "SELECTOR_NIVEL"
+    #SOLUCIÓN: El botón Menú devuelve el valor correcto: "SELECTOR_NIVEL"
     btn_menu = BotonSimple(START_X, BUTTON_Y, BTN_W, BTN_H, PATH_BTN_MENU_PAUSA, "SELECTOR_NIVEL")
     btn_restart = BotonSimple(START_X + BTN_W + GAP, BUTTON_Y, BTN_W, BTN_H, PATH_BTN_REINICIAR, "REINTENTAR")
     btn_play = BotonSimple(START_X + (BTN_W + GAP) * 2, BUTTON_Y, BTN_W, BTN_H, PATH_BTN_PLAY, "CONTINUE")
@@ -238,7 +203,7 @@ def run_pause_menu(ventana):
                 for btn in botones:
                     accion = btn.check_click(mouse_pos)
                     if accion:
-                        return accion
+                        return accion # Retorna "SELECTOR_NIVEL" o "REINTENTAR" o "CONTINUE"
             if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                 return "CONTINUE"
 
@@ -251,25 +216,22 @@ def run_pause_menu(ventana):
         pygame.display.flip()
         pygame.time.Clock().tick(30) 
 
-# --- FUNCIÓN PRINCIPAL DEL NIVEL CORREGIDA PARA RETORNO DE DERROTA ---
-def run_level(ventana, precargados, img_btn_regresar, REGRESAR_RECT):
+# --- FUNCIÓN PRINCIPAL DEL NIVEL TUTORIAL (CORREGIDA) ---
+def run_tutorial_level(ventana, precargados, img_btn_regresar, REGRESAR_RECT):
+    """Recibe recursos precargados e inicia el bucle del tutorial."""
     
-    # Desempaquetar los recursos precargados
     fondo_nivel, player_group, obstaculo_group, meta_group, coleccionable_group = precargados
     
     ANCHO = ventana.get_width()
-    ALTO = ventana.get_height()
     clock = pygame.time.Clock()
     
     btn_pausa = BotonSimple(ANCHO - 60, 20, 40, 40, PATH_BTN_PAUSA, "PAUSE")
     
-    # --- 1. INICIO DEL JUEGO REAL ---
     start_time = time.time() 
     is_paused = False 
     pause_start_time = 0 
 
     coleccionables_recogidos = 0 
-    elapsed_time = 0 
     penalizacion_total = 0 
 
     running = True
@@ -278,7 +240,7 @@ def run_level(ventana, precargados, img_btn_regresar, REGRESAR_RECT):
         elapsed_time = time.time() - start_time + penalizacion_total
         remaining_time = max(0, TIEMPO_LIMITE_SEGUNDOS - elapsed_time)
         
-        # 1. MANEJO DE EVENTOS
+        # 1. MANEJO DE EVENTOS (SIN CAMBIOS)
         for event in pygame.event.get(): 
             if event.type == pygame.QUIT:
                 pygame.quit(); sys.exit()
@@ -291,9 +253,8 @@ def run_level(ventana, precargados, img_btn_regresar, REGRESAR_RECT):
                     is_paused = True
                     pause_start_time = time.time()
 
-        # 2. LÓGICA DE PAUSA
+        # 2. LÓGICA DE PAUSA (SOLUCIÓN IMPLEMENTADA AQUÍ)
         if is_paused:
-            # Dibuja el estado congelado del nivel
             ventana.blit(fondo_nivel, (0, 0)) 
             player_group.draw(ventana)
             obstaculo_group.draw(ventana) 
@@ -304,36 +265,28 @@ def run_level(ventana, precargados, img_btn_regresar, REGRESAR_RECT):
             pygame.display.flip()
             
             accion_pausa = run_pause_menu(ventana) 
+            
+            #SOLUCIÓN: Si el menú devuelve SELECTOR_NIVEL, salimos inmediatamente con ese valor.
+            if accion_pausa == "SELECTOR_NIVEL":
+                return "SELECTOR_NIVEL", None, None 
 
-            # Lógica post-menú
             if accion_pausa == "CONTINUE":
                 is_paused = False
                 pause_duration = time.time() - pause_start_time
                 start_time += pause_duration 
-                
             elif accion_pausa == "REINTENTAR":
-                return "REINTENTAR", None, None
-                
-            #VALIDACIÓN CLAVE: Si el menú devuelve SELECTOR_NIVEL, regresamos eso.
-            elif accion_pausa == "SELECTOR_NIVEL": 
-                return "SELECTOR_NIVEL", None, None 
-                
+                return "REINTENTAR", None, None # Esto reinicia el nivel, como debe ser
+            
             continue 
 
-        # 3. LÓGICA DEL JUEGO 
+        # 3. LÓGICA DEL JUEGO (SIN CAMBIOS)
         
         # CONDICIÓN DE DERROTA POR TIEMPO
         if remaining_time <= 0:
             running = False
-            accion_derrota = run_pantalla_derrota(ventana) # Captura el resultado
-            
-            #CORRECCIÓN CLAVE 1: Intercepta "MENU" y lo cambia a "SELECTOR_NIVEL"
-            if accion_derrota[0] == "MENU":
-                return "SELECTOR_NIVEL", None, None 
-            
-            return accion_derrota # Devuelve REINTENTAR
+            # Si pierdes por tiempo, regresas al selector de niveles
+            return "SELECTOR_NIVEL", None, None
         
-        # ACTUALIZAR Y COLISIONES CON COLECCIONABLES
         player = player_group.sprites()[0] 
         player_group.update(obstaculo_group) 
         
@@ -345,23 +298,18 @@ def run_level(ventana, precargados, img_btn_regresar, REGRESAR_RECT):
             else:
                 coleccionables_recogidos += 1
             
-        # DETECCIÓN DE META CONDICIONAL
+        # CONDICIÓN DE META
         if pygame.sprite.spritecollide(player, meta_group, False):
             if coleccionables_recogidos >= NUM_COLECCIONABLES_REQUERIDOS:
                 running = False 
-                return run_pantalla_ganaste(ventana, img_btn_regresar, REGRESAR_RECT) 
+                # Retorno de la pantalla de victoria (debe devolver 'SELECTOR_NIVEL' o similar)
+                return run_pantalla_tutorial_win(ventana, img_btn_regresar, REGRESAR_RECT) 
             else:
-                # DERROTA: Llegó a la meta sin suficientes coleccionables
+                # DERROTA por falta de coleccionables, regresa a selector de nivel
                 running = False 
-                accion_derrota = run_pantalla_derrota(ventana) # Captura el resultado
+                return "SELECTOR_NIVEL", None, None
                 
-                #CORRECCIÓN CLAVE 2: Intercepta "MENU" y lo cambia a "SELECTOR_NIVEL"
-                if accion_derrota[0] == "MENU":
-                    return "SELECTOR_NIVEL", None, None 
-                    
-                return accion_derrota # Devuelve REINTENTAR 
-                
-        # 4. Dibujar
+        # 4. Dibujar (SIN CAMBIOS)
         ventana.blit(fondo_nivel, (0, 0)) 
         player_group.draw(ventana)
         obstaculo_group.draw(ventana) 
@@ -375,5 +323,5 @@ def run_level(ventana, precargados, img_btn_regresar, REGRESAR_RECT):
         pygame.display.flip()
         clock.tick(60)
 
-    # Fallback
+    # Si el bucle termina por alguna razón no contemplada
     return "MENU", None, None

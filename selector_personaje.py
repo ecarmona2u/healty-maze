@@ -15,14 +15,14 @@ PATH_FONDO_SELECTOR_PERSONAJE = "recursos/fondo_seleccionar_personaje.png"
 PATH_BTN_CONFIRMAR_NORMAL = "recursos/botones/btn_confirmar.png"
 PATH_BTN_REGRESAR = "recursos/botones/btn_regresar.png" 
 PATH_ANIMACIONES = "recursos/animaciones/"
-# 🚨 Nueva constante para las imágenes de menú
+#Nueva constante para las imágenes de menú
 PATH_IMAGENES_MENU = "recursos/imagenes_menu_perso/"
 
 # Datos de Personajes (MODIFICADO para incluir la ruta de la imagen de menú)
 PERSONAJES_DATA = {
     "chica": {
         "name": "Chica",
-        # 🚨 Ruta de la imagen para el menú de selección
+        #Ruta de la imagen para el menú de selección
         "menu_img": f"{PATH_IMAGENES_MENU}chica_menu.png",
         "anim": {
             "front": [f"{PATH_ANIMACIONES}chica/idle_front_{i:02d}.png" for i in range(1, 5)], 
@@ -33,7 +33,7 @@ PERSONAJES_DATA = {
     },
     "chico": {
         "name": "Chico",
-        # 🚨 Ruta de la imagen para el menú de selección
+        #Ruta de la imagen para el menú de selección
         "menu_img": f"{PATH_IMAGENES_MENU}chico_menu.png",
         "anim": {
             "front": [f"{PATH_ANIMACIONES}chico/idle_front_{i:02d}.png" for i in range(1, 5)], 
@@ -87,7 +87,7 @@ def run_selector_personaje(ventana):
     # 2. Imágenes de personajes (MODIFICADO para usar la nueva ruta 'menu_img')
     imagenes_personajes_normal = {}
     for id, data in PERSONAJES_DATA.items():
-        # 🚨 CAMBIO AQUÍ: Usamos la nueva clave 'menu_img' en lugar del primer frame de la animación.
+        #CAMBIO AQUÍ: Usamos la nueva clave 'menu_img' en lugar del primer frame de la animación.
         path_menu_img = data["menu_img"] 
         try:
             img_normal = pygame.image.load(path_menu_img).convert_alpha()
