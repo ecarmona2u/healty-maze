@@ -16,12 +16,12 @@ class Player(pygame.sprite.Sprite):
         # --- ESTADOS DEL JUGADOR ---
         self.is_moving = False
         self.frame_index = 0
-        self.animation_speed = 0.15 
+        self.animation_speed = 0.1 
         
         self.image = self.animations[self.direction][self.frame_index]
         self.rect = self.image.get_rect(topleft=start_pos)
         
-        self.speed = 4
+        self.speed = 2 # velocidad de personaje
         
     def get_input(self):
         keys = pygame.key.get_pressed()

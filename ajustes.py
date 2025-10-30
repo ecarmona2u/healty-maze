@@ -1,7 +1,8 @@
-# ajustes.py (MODIFICADO: Se eliminan los botones GUARDAR y CERRAR)
+# ajustes.py (CÓDIGO COMPLETO Y FINAL)
 import pygame
 import sys
-import audio_manager 
+# 🚨 Importa la INSTANCIA para acceder a sus métodos
+from audio_manager import audio_manager 
 
 # --- CONSTANTES DE AJUSTES ---
 NEGRO = (0, 0, 0)
@@ -49,6 +50,7 @@ class VolumeSlider:
 
     def handle_event(self, event, mouse_pos):
         """Maneja el arrastre del slider."""
+        # Usa la función is_muted()
         if audio_manager.is_muted():
             return
             
@@ -63,13 +65,16 @@ class VolumeSlider:
                 pos_x = max(self.bar_rect.left, min(self.bar_rect.right, pos_x))
                 
                 self.volume = (pos_x - self.bar_rect.left) / self.bar_rect.width
-                audio_manager.set_global_volume(self.volume)
+                # Usa la función set_volume()
+                audio_manager.set_volume(self.volume)
                 self._update_slider_position(self.volume)
 
     def draw(self, surface):
         # Sincronizar posición visual si no estamos arrastrando
         if not self.dragging:
+            # Obtiene el volumen real para dibujar
             display_volume = 0.0 if audio_manager.is_muted() else audio_manager.get_current_volume()
+            self.volume = display_volume 
             self._update_slider_position(display_volume)
         
         # Fondo de la barra
@@ -85,7 +90,7 @@ class VolumeSlider:
         pygame.draw.circle(surface, AZUL, self.slider_rect.center, self.slider_rect.height // 2, 2)
 
 
-# --- UTILIDADES DE DIBUJO Y CÁLCULO (Existentes) ---
+# --- UTILIDADES DE DIBUJO Y CÁLCULO ---
 
 def obtener_rect_modal(ancho_pantalla, alto_pantalla):
     """Calcula el rectángulo principal del modal centrado."""
@@ -149,16 +154,16 @@ def dibujar_ajustes_contenido(ventana, mouse_pos, fondo_modal, modal_rect):
     if _slider_cache is None:
         slider_x = modal_rect.left + 50
         slider_y = modal_rect.top + 160
+        # Usa la función get_current_volume()
         _slider_cache = VolumeSlider(slider_x, slider_y, SLIDER_WIDTH, SLIDER_HEIGHT, audio_manager.get_current_volume())
         
     _slider_cache.draw(ventana)
     
     # 3. Botón de Mute
     mute_assets = _get_mute_btn_assets()
-    # Posición del botón de mute junto al slider
     btn_rect = pygame.Rect(_slider_cache.bar_rect.right + 20, _slider_cache.bar_rect.centery - MUTE_BTN_SIZE // 2, MUTE_BTN_SIZE, MUTE_BTN_SIZE)
     
-    # Selecciona la imagen correcta
+    # Usa la función is_muted() para seleccionar la imagen
     current_img = mute_assets['mute'] if audio_manager.is_muted() else mute_assets['unmute']
     
     # Dibujar el botón
@@ -166,11 +171,10 @@ def dibujar_ajustes_contenido(ventana, mouse_pos, fondo_modal, modal_rect):
     if btn_rect.collidepoint(mouse_pos):
         pygame.draw.rect(ventana, AZUL, btn_rect, 3) 
     
-    # Solo devolvemos el rect del botón de mute para manejar su clic
     return {'mute_btn': btn_rect}
 
 
-# --- FUNCIÓN PRINCIPAL (Modificada para la salida simple) ---
+# --- FUNCIÓN PRINCIPAL ---
 
 def gestionar_ajustes_modal(ventana, event_list, mouse_pos):
     """
@@ -200,9 +204,10 @@ def gestionar_ajustes_modal(ventana, event_list, mouse_pos):
         if event.type == pygame.MOUSEBUTTONDOWN:
             # Botón MUTE
             if botones['mute_btn'].collidepoint(mouse_pos):
+                # Usa la función toggle_mute()
                 audio_manager.toggle_mute()
             
         if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-            return 'cerrar' # <-- Única forma de salir
+            return 'cerrar' 
             
-    return None # No hubo acción que requiera cambio de estado
+    return None
