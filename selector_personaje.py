@@ -6,7 +6,7 @@ import sys
 from player import Player 
 
 # --- CONSTANTES ---
-IMG_SIZE_DISPLAY = (500, 400) # Tamaño para la vista previa
+IMG_SIZE_DISPLAY = (507, 300) # Tamaño para la vista previa
 IMG_SIZE_GAME = (60, 60)     # Tamaño para el juego real (player.py)
 COLOR_RESALTE = (255, 255, 0)
 
@@ -108,8 +108,8 @@ def run_selector_personaje(ventana):
         img_regresar = pygame.Surface(BTN_REGRESAR_SIZE); img_regresar.fill((150, 0, 0))
 
     # Botón Confirmar (abajo derecha)
-    BTN_CONFIRMAR_SIZE = (150, 50)
-    CONFIRMAR_RECT = pygame.Rect(ANCHO - 160, ALTO - 60, BTN_CONFIRMAR_SIZE[0], BTN_CONFIRMAR_SIZE[1])
+    BTN_CONFIRMAR_SIZE = (300, 100)
+    CONFIRMAR_RECT = pygame.Rect(ANCHO - 330, ALTO - 110, BTN_CONFIRMAR_SIZE[0], BTN_CONFIRMAR_SIZE[1])
     try:
         img_confirmar = pygame.image.load(PATH_BTN_CONFIRMAR_NORMAL).convert_alpha()
         img_confirmar = pygame.transform.scale(img_confirmar, BTN_CONFIRMAR_SIZE)
@@ -119,8 +119,8 @@ def run_selector_personaje(ventana):
 
     # 4. Coordenadas de los personajes
     personaje_rects = {}
-    pos_chica = (ANCHO // 2 - IMG_SIZE_DISPLAY[0] - 50, ALTO // 2 - IMG_SIZE_DISPLAY[1] // 2 + 50)
-    pos_chico = (ANCHO // 2 + 50, ALTO // 2 - IMG_SIZE_DISPLAY[1] // 2 + 50)
+    pos_chica = (ANCHO // 2 - IMG_SIZE_DISPLAY[0] - 50, ALTO // 2 - IMG_SIZE_DISPLAY[1] // 2 + 10)
+    pos_chico = (ANCHO // 2 + 50, ALTO // 2 - IMG_SIZE_DISPLAY[1] // 2 + 10)
     
     personaje_rects['chica'] = imagenes_personajes_normal['chica'].get_rect(topleft=pos_chica)
     personaje_rects['chico'] = imagenes_personajes_normal['chico'].get_rect(topleft=pos_chico)

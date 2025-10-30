@@ -1,9 +1,11 @@
+# selector_nivel.py (CÓDIGO COMPLETO Y CORREGIDO para Nivel 2 y 3)
+
 import pygame
 import sys
 import nivel_en_proceso 
 import tutorial_level          
 import tutorial_win_screen     
-import loading_screen          # Lo mantenemos importado por si se usa en otros niveles
+import loading_screen          
 
 # --- CONSTANTES ---
 # Nuevo tamaño por defecto (se usará si no se define uno individual)
@@ -17,16 +19,16 @@ COLOR_REGRESAR_FALLBACK = (200, 50, 50)
 # Paths de las imágenes de nivel con COORDENADAS FIJAS (x, y) y TAMAÑO INDIVIDUAL
 NIVEL_PATHS = {
     # Tutorial: Usa el tamaño por defecto (250x200)
-    'tutorial': {"path": "recursos/tutorial_img.png", "pos_x": 1080, "pos_y": 623, "width":180 , "height": 61}, 
+    'tutorial': {"path": "recursos/tutorial_img.png", "pos_x": 900, "pos_y": 600, "width":270 , "height": 100}, 
     
     # Nivel 1: Tamaño grande (350x250)
     'nivel_1': {"path": "recursos/nivel_1_img.png", "pos_x": 285, "pos_y": 142, "width": 348, "height": 154}, 
     
     # Nivel 2: Tamaño pequeño (150x150)
-    'nivel_2': {"path": "recursos/nivel_2_img.png", "pos_x": 825, "pos_y": 261, "width": 305, "height": 223},
+    'nivel_2': {"path": "recursos/nivel_2_img.png", "pos_x": 825, "pos_y": 261, "width": 305, "height": 223}, # <-- OK
     
     # Nivel 3: Usa el tamaño por defecto (250x200)
-    'nivel_3': {"path": "recursos/nivel_3_img.png", "pos_x": 294, "pos_y": 479, "width": 312, "height": 167},
+    'nivel_3': {"path": "recursos/nivel_3_img.png", "pos_x": 294, "pos_y": 479, "width": 312, "height": 167}, # <-- OK
 }
 PATH_FONDO = "recursos/fondo_selector_nivel.png"
 
@@ -107,39 +109,32 @@ def run_selector_nivel(ventana, character_data):
                                 precargados = tutorial_level.preload_tutorial_level(ventana, character_data)
                                 retorno, _, _ = tutorial_level.run_tutorial_level(ventana, precargados, img_btn_regresar, REGRESAR_RECT)
                                 
-                                # ✅ CORRECCIÓN CLAVE AQUÍ
                                 if retorno == "SELECTOR_NIVEL":
-                                    # Esto significa que el jugador Salió del tutorial al menú de niveles.
-                                    # Debemos detener el bucle interno y externo sin seleccionar un nivel.
                                     nivel_seleccionado = None 
                                     seleccion_activa = False
                                     tutorial_activo = False
-                                    break # Rompe el bucle 'while tutorial_activo'
+                                    break 
                                 
                                 elif retorno == "nivel_1":
                                     nivel_seleccionado = "nivel_1"
                                     seleccion_activa = False
                                     tutorial_activo = False 
+                                    break
                                 elif retorno == "MENU":
-                                    # Si retorna MENU, salimos del selector completamente (regresa al menú principal)
                                     return None 
                                 elif retorno == "REINTENTAR":
-                                    # Reinicia el bucle 'while tutorial_activo'
                                     continue 
-                                # Nota: Cualquier otro retorno se mapea aquí, si es victoria debe ser 'nivel_1' o 'SELECTOR_NIVEL'
 
-                            # Si seleccion_activa se puso en False, rompemos el bucle for
                             if not seleccion_activa:
                                 break
                             
-                        # Manejo del Nivel 1 (Nivel real)
-                        elif nivel_id == 'nivel_1':
+                        # Manejo de Nivel 1, 2 y 3 (Niveles reales)
+                        # Todos devuelven el ID para que juego_principal se encargue de la precarga
+                        elif nivel_id in ('nivel_1', 'nivel_2', 'nivel_3'): # <-- LÓGICA UNIFICADA
                             nivel_seleccionado = nivel_id
                             seleccion_activa = False 
                         
-                        # Manejo de Nivel 2 y 3 
-                        else:
-                            nivel_en_proceso.run_nivel_en_proceso(ventana, img_btn_regresar, REGRESAR_RECT)
+                        # Si deseas bloquear niveles, usa un 'else:' aquí para llamar a nivel_en_proceso.
                         
                         break
                 

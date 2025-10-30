@@ -1,70 +1,116 @@
-# coleccionable.py
+# coleccionable.py (ACTUALIZADO para la nueva estructura /buenos/ y /malos/)
 
 import pygame
+import os 
 
-# --- RUTAS DE IMÁGENES (AJUSTA ESTO A TUS ARCHIVOS) ---
+# --- CONSTANTES DE ANIMACIÓN ---
+# Tiempo entre cada frame de la animación (en milisegundos).
+ANIMATION_SPEED = 100 
+NUM_FRAMES = 12 # Todos los sets tienen 12 imágenes (1 a 12)
 
-# Rutas de los 6 coleccionables buenos (índices 0 a 5)
-PATH_COLECTABLE_1 = "recursos/coleccionables/colectable_1.png" 
-PATH_COLECTABLE_2 = "recursos/coleccionables/colectable_2.png" 
-PATH_COLECTABLE_3 = "recursos/coleccionables/colectable_3.png"
-PATH_COLECTABLE_4 = "recursos/coleccionables/colectable_4.png"
-PATH_COLECTABLE_5 = "recursos/coleccionables/colectable_5.png"
-PATH_COLECTABLE_6 = "recursos/coleccionables/colectable_6.png"
-
-# Rutas de las 3 imágenes de penalización (índices 6 a 8)
-PATH_PENALIZACION_1 = "recursos/malus/malus_4.png" 
-PATH_PENALIZACION_2 = "recursos/malus/malus_5.png" 
-PATH_PENALIZACION_3 = "recursos/malus/malus_6.png" 
-
-# --- CONSTANTE DE TAMAÑOS (Nueva adición para personalizar tamaños por índice) ---
-# Puedes cambiar los tamaños predeterminados aquí. Si un índice no está listado, usará (50, 50).
-IMAGE_SIZES = {
-    # Coleccionables buenos (índices 0-5)
-    0: (50, 50), # Ejemplo: Más pequeño
-    1: (50, 50), 
-    2: (50, 50),
-    3: (50, 50),
-    4: (50, 50),
-    5: (50, 50),
+# --- MAPEO DE COLECCIONABLES A CARPETAS ---
+# Definimos las carpetas base y el prefijo de archivo para cada índice.
+# Asignamos índices 0-2 a los "buenos" y 3-5 a los "malos".
+ANIMATION_SETS = {
+    # COLECCIONABLES BUENOS (Índices 0, 1, 2) - Tienen animación
+    0: {"base_path": "recursos/coleccionables/buenos/almoada", "prefix": "almoada_"}, 
+    1: {"base_path": "recursos/coleccionables/buenos/libros", "prefix": "libros_"}, 
+    2: {"base_path": "recursos/coleccionables/buenos/manzana", "prefix": "manzana_"}, 
     
-    # Penalizaciones (índices 6-8)
-    6: (40, 50), # Ejemplo: Más grande para que destaque
-    7: (40, 50),
-    8: (40, 50),
+    # COLECCIONABLES MALOS (PENALIZACIONES) (Índices 3, 4, 5) - Tienen animación
+    3: {"base_path": "recursos/coleccionables/malos/celular", "prefix": "celular_"}, 
+    4: {"base_path": "recursos/coleccionables/malos/paleta", "prefix": "paleta_"}, 
+    5: {"base_path": "recursos/coleccionables/malos/refresco", "prefix": "refresco_"}, 
 }
+
+MAX_INDEX = 5 # El índice más alto usado en ANIMATION_SETS
+
+
+# --- CONSTANTE DE TAMAÑOS ---
+IMAGE_SIZES = {
+    # Buenos
+    0: (50, 50), # Almoada
+    1: (50, 50), # Libros
+    2: (50, 50), # Manzana
+    
+    # Malos (Penalizaciones)
+    3: (40, 55), # Celular (Un poco más grande para ser llamativo)
+    4: (55, 55), # Paleta
+    5: (40, 55), # Refresco
+}
+
+
 # --- CLASE COLECCIONABLE ---
 
 class Coleccionable(pygame.sprite.Sprite):
     
-    # Lista maestra de paths de imágenes para todos los coleccionables
-    IMAGE_PATHS = [
-        PATH_COLECTABLE_1, PATH_COLECTABLE_2, PATH_COLECTABLE_3, 
-        PATH_COLECTABLE_4, PATH_COLECTABLE_5, PATH_COLECTABLE_6,
-        PATH_PENALIZACION_1, # Index 6
-        PATH_PENALIZACION_2, # Index 7
-        PATH_PENALIZACION_3  # Index 8
-    ]
-    
     def __init__(self, x, y, index, size=None):
         super().__init__()
+        
+        if index not in ANIMATION_SETS:
+             raise ValueError(f"Índice de coleccionable {index} no es válido. Debe ser entre 0 y {MAX_INDEX}.")
+             
         self.index = index
+        self.is_animated = True # ¡Ahora todos se animan!
         
-        # ✅ Lógica para obtener el tamaño: usa el dict, o (50, 50) por defecto si no está listado
-        final_size = IMAGE_SIZES.get(index, (50, 50)) 
+        # 1. Configuración de Animación
+        self.images = []        
+        self.frame_index = 0    
+        self.animation_timer = 0 
         
-        self.image = self.load_image(index, final_size)
+        self.final_size = IMAGE_SIZES.get(index, (50, 50)) 
+        
+        # 2. Cargar imágenes
+        self.load_images(index)
+        
+        # 3. Asignar imagen inicial y rect
+        self.image = self.images[self.frame_index]
         self.rect = self.image.get_rect(topleft=(x, y))
 
-    def load_image(self, index, size):
-        try:
-            path = Coleccionable.IMAGE_PATHS[index]
-            original = pygame.image.load(path).convert_alpha()
-            return pygame.transform.scale(original, size) 
-        except (pygame.error, IndexError):
-            # Fallback en caso de que una imagen no se cargue.
-            fallback = pygame.Surface(size)
-            # Rojo para penalización (6+) y Verde para buenos (0-5)
-            fallback_color = (255, 0, 0) if index >= 6 else (0, 255, 0)
-            fallback.fill(fallback_color)
-            return fallback
+    def load_images(self, index):
+        
+        config = ANIMATION_SETS[index]
+        
+        for i in range(1, NUM_FRAMES + 1):
+            
+            # Construye la ruta: 'base_path/prefix_i.png'
+            # Ejemplo: recursos/coleccionables/buenos/almoada/almoada_1.png
+            filename = f"{config['prefix']}{i}.png"
+            path = os.path.join(config['base_path'], filename)
+            
+            try:
+                original = pygame.image.load(path).convert_alpha()
+                scaled = pygame.transform.scale(original, self.final_size)
+                self.images.append(scaled)
+            except pygame.error:
+                print(f"Error cargando frame: {path}")
+                
+                # Fallback: Color según si es bueno (<=2) o malo (>=3)
+                fallback_color = (0, 255, 0) if index <= 2 else (255, 0, 0)
+                fallback = pygame.Surface(self.final_size)
+                fallback.fill(fallback_color)
+                self.images.append(fallback)
+                
+        # Asegurarse de que al menos hay una imagen (el fallback)
+        if not self.images:
+            fallback = pygame.Surface(self.final_size); fallback.fill((255, 0, 255))
+            self.images.append(fallback)
+
+
+    def update(self, dt):
+        """Actualiza la animación de todos los coleccionables."""
+        
+        # Incrementa el temporizador con el tiempo transcurrido (dt)
+        self.animation_timer += dt
+        
+        if self.animation_timer >= ANIMATION_SPEED:
+            self.animation_timer = 0
+            
+            # Cicla el índice de frame
+            self.frame_index = (self.frame_index + 1) % len(self.images)
+            
+            # Asigna la nueva imagen al sprite
+            self.image = self.images[self.frame_index]
+            
+# --- RECUERDA ---
+# Debes llamar a `coleccionables_group.update(dt)` en el bucle principal de tus niveles.
