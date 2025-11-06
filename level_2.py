@@ -13,10 +13,10 @@ import loading_screen
 from audio_manager import audio_manager # Importación correcta del gestor de audio
 
 # --- CONSTANTES ---
-PATH_FONDO_NIVEL_1 = "recursos/FondoNivel1.jpg" 
+PATH_FONDO_NIVEL_2 = "recursos/FondoNivel2_provicional2.jpg" 
 AZUL_FALLBACK = (50, 50, 150)
-NUM_COLECCIONABLES_REQUERIDOS = 6 
-TIEMPO_LIMITE_SEGUNDOS = 35
+NUM_COLECCIONABLES_REQUERIDOS = 0
+TIEMPO_LIMITE_SEGUNDOS = 120
 TIEMPO_PENALIZACION = 3
 
 # --- CONSTANTES DE PAUSA (Completas y Corregidas) ---
@@ -68,15 +68,39 @@ def setup_level(player):
     
     # DEFINICIÓN DE OBSTÁCULOS
     obstaculos_coords = [
-        (0, 110, 955, 20), (1116, 110, 164, 20), (0, 129, 13, 700), 
-        (1262, 129, 16, 700), (0, 700, 1280, 20), (94, 213, 73, 72), 
-        (94, 213, 229, 20), (251, 213, 73, 178), (13, 371, 240, 20),
-        (488, 128, 73, 309), (551, 417, 246, 20), (724, 417, 73, 174),
-        (330, 519, 467, 20), (330, 534, 73, 55), (93, 571, 310, 20),
-        (93, 467, 73, 124), (488, 639, 73, 67), (1116, 127, 73, 105), 
-        (646, 212, 472, 20), (646, 225, 73, 110), (711, 315, 321, 20),
-        (1116, 315, 73, 122), (880, 417, 240, 20), (880, 432, 73, 157),
-        (1188, 571, 73, 20), (1032, 572, 73, 132)
+        
+        (1, 82, 1269, 19),
+        (1269, 99, 17, 619),
+        (1, 707, 1279, 13),
+        (2, 718, 17, 622),
+        #OBSTACULO MESAS
+        (102, 142, 135, 49),#1
+        (316, 142, 290, 46),#2
+        (702, 142, 154, 42 ),#3
+        (926, 155, 316, 34),#4
+        (1199, 193, 60, 160),#5
+        (1042, 295, 151, 48),#6
+        (865, 286, 59, 152),#7
+        (707, 399, 158, 49),#8
+        (510, 401, 86, 42),#9
+        (488, 281, 136, 41),#10 
+        (256, 281, 135, 41),#11
+        (92, 397, 148, 44),#12
+        (48, 302, 65, 78),#13.1
+        (53, 386, 40, 156),#13.2
+        (196, 522, 86, 45),#14
+        (365, 502, 63, 126),#15
+        (511, 519, 87, 45),#16
+        (712, 520, 87, 45),#17
+        (895, 517, 137, 46),#18
+        (1133, 435, 137, 45),#19
+        (1133, 596, 146, 29),#20
+        (1181, 579, 90, 15),#20.1
+        (923, 644, 138, 41),#21
+        (704, 644, 138, 41),#22
+        (494, 645, 137, 40),#23
+        (281, 644, 147, 44),#24
+        (68, 644, 137, 40),#25
     ]
     
     for x, y, w, h in obstaculos_coords:
@@ -84,7 +108,7 @@ def setup_level(player):
         obstaculo_list.add(obstaculo)
         
     # DEFINICIÓN DE LA META
-    meta = Meta(955, 100, 160, 17)
+    meta = Meta(1266, 573, 17, 64)
     meta_group.add(meta)
     
     # COLECCIONABLES (Índices 0-2 BUENOS, 3-5 MALOS)
@@ -109,13 +133,13 @@ def preload_level(ventana, character_data):
     
     # 1. Cargar Fondo
     try:
-        fondo_nivel = pygame.image.load(PATH_FONDO_NIVEL_1).convert()
+        fondo_nivel = pygame.image.load(PATH_FONDO_NIVEL_2).convert()
         fondo_nivel = pygame.transform.scale(fondo_nivel, (ANCHO, ALTO))
     except pygame.error as e:
         fondo_nivel = pygame.Surface((ANCHO, ALTO)); fondo_nivel.fill(AZUL_FALLBACK)
         
     # 2. Inicializar Personaje
-    start_position = (175, 250) 
+    start_position = (30, 230) 
     from player import Player
     player = Player(start_position, character_data, ANCHO, ALTO) 
     player_group = pygame.sprite.Group(player)

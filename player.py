@@ -21,7 +21,7 @@ class Player(pygame.sprite.Sprite):
         self.image = self.animations[self.direction][self.frame_index]
         self.rect = self.image.get_rect(topleft=start_pos)
         
-        self.speed = 2 # velocidad de personaje
+        self.speed = 5 # velocidad de personaje
         
     def get_input(self):
         keys = pygame.key.get_pressed()
