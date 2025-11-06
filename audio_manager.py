@@ -1,23 +1,30 @@
-# audio_manager.py (CÓDIGO COMPLETO Y CORREGIDO para Nivel 2 y 3)
+# audio_manager.py (CÓDIGO COMPLETO CON CONTROL DE VOLUMEN DE SFX Y CORRECCIONES)
 
 import pygame
 import sys
 
 # --- CONSTANTES DE RUTA ---
-# IMPORTANTE: Asegúrate de que los archivos .mp3 estén en una carpeta llamada 'recursos'
 PATH_MUSICA_MENU = "recursos/musica/musica_menus.mp3"
 PATH_MUSICA_NIVEL_1 = "recursos/musica/musica_niveles.mp3"
-PATH_MUSICA_NIVEL_2 = "recursos/musica/musica_niveles.mp3" # <-- NUEVA CONSTANTE
-PATH_MUSICA_NIVEL_3 = "recursos/musica/musica_niveles.mp3" # <-- NUEVA CONSTANTE
+PATH_MUSICA_NIVEL_2 = "recursos/musica/musica_niveles.mp3"
+PATH_MUSICA_NIVEL_3 = "recursos/musica/musica_niveles.mp3"
 PATH_MUSICA_SELECTOR = "recursos/musica/musica_menus.mp3" 
 PATH_MUSICA_TUTORIAL = "recursos/musica/musica_niveles.mp3" 
+
+# 🚨 CONSTANTES PARA LOS EFECTOS DE SONIDO DE COLECCIONABLES
+PATH_SFX_GOOD = "recursos/audio/item_bueno.mp3"
+PATH_SFX_BAD = "recursos/audio/item_malo.mp3"
+
+# 🚨 VOLUMEN DE LOS EFECTOS DE SONIDO (0.0 a 1.0)
+SFX_VOLUME = 0.3 # <--- AJUSTA ESTE VALOR PARA HACERLO MÁS FUERTE O SUAVE
 
 class AudioManager:
     def __init__(self):
         # Inicializar el mixer
         if not pygame.mixer.get_init():
             try:
-                pygame.mixer.init(frequency=44100, size=-16, channels=2, buffer=512)
+                # Se aumenta el buffer para mejor gestión de SFX cortos
+                pygame.mixer.init(frequency=44100, size=-16, channels=2, buffer=1024) 
             except pygame.error as e:
                 print(f"Error al inicializar el mixer de Pygame: {e}")
                 sys.exit()
@@ -25,18 +32,42 @@ class AudioManager:
         self.music_paths = {
             'menu_principal': PATH_MUSICA_MENU,
             'nivel_1': PATH_MUSICA_NIVEL_1,
-            'nivel_2': PATH_MUSICA_NIVEL_2, # <-- NUEVA CLAVE
-            'nivel_3': PATH_MUSICA_NIVEL_3, # <-- NUEVA CLAVE
+            'nivel_2': PATH_MUSICA_NIVEL_2,
+            'nivel_3': PATH_MUSICA_NIVEL_3,
             'selector': PATH_MUSICA_SELECTOR,
             'tutorial': PATH_MUSICA_TUTORIAL,
         }
         self.MUSICA_ACTUAL = None
-        self.is_music_paused = False # Bandera interna (soluciona error get_paused)
+        self.is_music_paused = False
         
-        # Gestor de volumen y mute (soluciona error get_current_volume y set_global_volume)
+        # Gestor de volumen y mute (para MÚSICA)
         self._stored_volume = 0.5    
         self._is_muted = False
         pygame.mixer.music.set_volume(self._stored_volume)
+        
+        # 🚨 Carga de SFX de coleccionables
+        try:
+            self.sfx_good = pygame.mixer.Sound(PATH_SFX_GOOD)
+            self.sfx_bad = pygame.mixer.Sound(PATH_SFX_BAD)
+            
+            # 👇 APLICAR VOLUMEN BAJO A CADA SFX
+            self.sfx_good.set_volume(SFX_VOLUME)
+            self.sfx_bad.set_volume(SFX_VOLUME)
+            
+        except pygame.error as e:
+            print(f"Error al cargar SFX (bueno/malo): {e}. Asegúrese de que 'recursos/audio/item_bueno.mp3' y 'item_malo.mp3' existan.")
+            # Fallback (para evitar AttributeError en play_collect_...)
+            self.sfx_good = type('DummySound', (object,), {'play': lambda: None})()
+            self.sfx_bad = type('DummySound', (object,), {'play': lambda: None})()
+
+    # --- NUEVOS MÉTODOS PARA SFX ---
+    def play_collect_good(self):
+        """Reproduce el sonido al recoger un objeto bueno."""
+        self.sfx_good.play()
+        
+    def play_collect_bad(self):
+        """Reproduce el sonido al recoger un objeto malo."""
+        self.sfx_bad.play()
 
 
     # --- CONTROL DE MÚSICA (Play/Pause/Stop) ---
@@ -57,18 +88,17 @@ class AudioManager:
                 self.MUSICA_ACTUAL = track_name
                 self.is_music_paused = False
                 
-                # Aplica el volumen inicial o 0.0 si está muteado
                 if not self._is_muted:
                     pygame.mixer.music.set_volume(self._stored_volume)
                 else:
                     pygame.mixer.music.set_volume(0.0)
                 
         except pygame.error as e:
-            # Esto se dispara si el archivo existe pero no se puede cargar (formato incorrecto, corrupto, etc.)
             print(f"Error CRÍTICO al reproducir la música: {e}. Asegúrate que el archivo sea un MP3 válido.") 
 
     def pause_music(self):
-        """Pausa la música si está sonando."""
+        """Pausa la música si está sonando. (Corregido el error de get_paused)"""
+        # 💡 CORRECCIÓN: Usar self.is_music_paused
         if pygame.mixer.music.get_busy() and not self.is_music_paused:
             pygame.mixer.music.pause()
             self.is_music_paused = True
@@ -110,5 +140,5 @@ class AudioManager:
             pygame.mixer.music.set_volume(self._stored_volume)
 
 
-# Crea una única instancia global para usar en todo el juego
+# Crea una única instancia global para usar en todo el juego (audio_manager en minúscula)
 audio_manager = AudioManager()

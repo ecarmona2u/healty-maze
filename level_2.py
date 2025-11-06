@@ -1,4 +1,4 @@
-# level_1.py 
+# level_1.py (CÓDIGO COMPLETO Y CORREGIDO con lógica de tiempo y SFX)
 
 import pygame
 from player import Player 
@@ -10,16 +10,18 @@ from coleccionable import Coleccionable
 import sys
 import time 
 import loading_screen 
-from audio_manager import audio_manager # Importación correcta del gestor de audio
+from audio_manager import audio_manager # 💡 IMPORTACIÓN DE LA INSTANCIA GLOBAL
 
 # --- CONSTANTES ---
-PATH_FONDO_NIVEL_1 = "recursos/FondoNivel1.jpg" 
+PATH_FONDO_NIVEL_1 = "recursos/FondoNivel2.jpg" 
 AZUL_FALLBACK = (50, 50, 150)
 NUM_COLECCIONABLES_REQUERIDOS = 6 
-TIEMPO_LIMITE_SEGUNDOS = 35
-TIEMPO_PENALIZACION = 3
+TIEMPO_LIMITE_SEGUNDOS = 30
+TIEMPO_PENALIZACION = 2
+TIEMPO_BONIFICACION = 0 # 💡 NUEVA CONSTANTE
+COLECCIONABLES_BUENOS_INDICES = [6, 7, 8] 
 
-# --- CONSTANTES DE PAUSA (Completas y Corregidas) ---
+# --- CONSTANTES DE PAUSA ---
 PATH_BTN_PAUSA = "recursos/btn_pausa.png"
 PATH_BTN_PLAY = "recursos/btn_play.png"
 PATH_BTN_MENU_PAUSA = "recursos/btn_menu.png"
@@ -35,7 +37,7 @@ AMARILLO = (255, 255, 0)
 GRIS_OSCURO_PAUSA = (0,0,0,0) 
 
 
-# --- CLASE BOTON SIMPLE (Copia de seguridad) ---
+# --- CLASE BOTON SIMPLE (REINCLUIDA AQUÍ PARA SOLUCIONAR EL ERROR) ---
 class BotonSimple:
     def __init__(self, x, y, width, height, path, action):
         self.action = action
@@ -59,24 +61,46 @@ class BotonSimple:
             return self.action
         return None
 
-# --- FUNCIÓN PARA CONFIGURAR EL NIVEL ---
+# --- FUNCIÓN PARA CONFIGURAR EL NIVEL (sin cambios) ---
 def setup_level(player):
-    # ... (El código de setup_level es el mismo, no requiere cambios funcionales) ...
     obstaculo_list = pygame.sprite.Group()
     meta_group = pygame.sprite.Group() 
     coleccionable_group = pygame.sprite.Group() 
     
     # DEFINICIÓN DE OBSTÁCULOS
     obstaculos_coords = [
-        (0, 110, 955, 20), (1116, 110, 164, 20), (0, 129, 13, 700), 
-        (1262, 129, 16, 700), (0, 700, 1280, 20), (94, 213, 73, 72), 
-        (94, 213, 229, 20), (251, 213, 73, 178), (13, 371, 240, 20),
-        (488, 128, 73, 309), (551, 417, 246, 20), (724, 417, 73, 174),
-        (330, 519, 467, 20), (330, 534, 73, 55), (93, 571, 310, 20),
-        (93, 467, 73, 124), (488, 639, 73, 67), (1116, 127, 73, 105), 
-        (646, 212, 472, 20), (646, 225, 73, 110), (711, 315, 321, 20),
-        (1116, 315, 73, 122), (880, 417, 240, 20), (880, 432, 73, 157),
-        (1188, 571, 73, 20), (1032, 572, 73, 132)
+        (1, 82, 1269, 19),
+        (1269, 99, 17, 619),
+        (1, 707, 1279, 13),
+        (2, 718, 17, 622),
+        #OBSTACULO MESAS
+        (102, 142, 135, 49),#1
+        (316, 142, 290, 46),#2
+        (702, 142, 154, 42 ),#3
+        (926, 155, 316, 34),#4
+        (1199, 193, 60, 160),#5
+        (1042, 295, 151, 48),#6
+        (865, 286, 59, 152),#7
+        (707, 399, 158, 49),#8
+        (510, 401, 86, 42),#9
+        (488, 281, 136, 41),#10 
+        (256, 281, 135, 41),#11
+        (92, 397, 148, 44),#12
+        (48, 302, 65, 78),#13.1
+        (53, 386, 40, 156),#13.2
+        (196, 522, 86, 45),#14
+        (365, 502, 63, 126),#15
+        (511, 519, 87, 45),#16
+        (712, 520, 87, 45),#17
+        (895, 517, 137, 46),#18
+        (1133, 435, 137, 45),#19
+        (1133, 596, 146, 29),#20
+        (1181, 579, 90, 15),#20.1
+        (923, 644, 138, 41),#21
+        (704, 644, 138, 41),#22
+        (494, 645, 137, 40),#23
+        (281, 644, 147, 44),#24
+        (68, 644, 137, 40),#25
     ]
     
     for x, y, w, h in obstaculos_coords:
@@ -89,11 +113,19 @@ def setup_level(player):
     
     # COLECCIONABLES (Índices 0-2 BUENOS, 3-5 MALOS)
     coleccionables_coords = [
-        (24, 186, 0), (347, 217, 2), (257, 644, 1), (595, 628, 2), 
-        (807, 391, 0), (574, 191, 1), 
+        (24, 186, 6), 
+        (347, 217, 7), 
+        (257, 644, 8), 
+        (595, 628, 7), 
+        (807, 391, 6), 
+        (574, 191, 8), 
         # Malos
-        (430, 416, 3), (186, 510, 4), (974, 648, 5), (1192, 510, 3), 
-        (1021, 265, 3), (1207, 205, 5) 
+        (430, 416, 9), 
+        (186, 510, 10), 
+        (974, 648, 11), 
+        (1192, 510, 9), 
+        (1021, 265, 10), 
+        (1207, 205, 11) 
     ]
 
     for x, y, index in coleccionables_coords:
@@ -102,7 +134,7 @@ def setup_level(player):
     return obstaculo_list, meta_group, coleccionable_group 
 
 
-# --- FUNCIÓN DE PRECÁRGALA (La optimización está en el uso de imágenes pequeñas) ---
+# --- FUNCIÓN DE PRECÁRGALA (sin cambios) ---
 def preload_level(ventana, character_data):
     ANCHO = ventana.get_width()
     ALTO = ventana.get_height()
@@ -159,7 +191,7 @@ def draw_ui(ventana, remaining_time, max_time, collected, required):
     ventana.blit(item_surface, (BAR_X, BAR_Y + BAR_HEIGHT + 10))
 
 # --------------------------------------------------------------------------
-# FUNCIÓN DEL MENÚ DE PAUSA
+# FUNCIÓN DEL MENÚ DE PAUSA (sin cambios)
 # --------------------------------------------------------------------------
 def run_pause_menu(ventana):
     ANCHO, ALTO = ventana.get_size()
@@ -187,7 +219,7 @@ def run_pause_menu(ventana):
     START_X = CENTER_X - (TOTAL_MENU_WIDTH // 2) 
     BUTTON_Y = PANEL_Y + PANEL_H - BTN_H - 30 
 
-    # Botones
+    # Botones (usa la clase BotonSimple que ahora está definida)
     btn_menu = BotonSimple(START_X, BUTTON_Y, BTN_W, BTN_H, PATH_BTN_MENU_PAUSA, "SELECTOR_NIVEL")
     btn_restart = BotonSimple(START_X + BTN_W + GAP, BUTTON_Y, BTN_W, BTN_H, PATH_BTN_REINICIAR, "REINTENTAR")
     btn_play = BotonSimple(START_X + (BTN_W + GAP) * 2, BUTTON_Y, BTN_W, BTN_H, PATH_BTN_PLAY, "CONTINUE")
@@ -204,7 +236,6 @@ def run_pause_menu(ventana):
                     accion = btn.check_click(mouse_pos)
                     if accion:
                         return accion
-            # 🚨 CORRECCIÓN CLAVE: ESC en el menú solo retorna "CONTINUE"
             if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                 return "CONTINUE"
 
@@ -217,7 +248,7 @@ def run_pause_menu(ventana):
         pygame.display.flip()
         pygame.time.Clock().tick(30) 
 
-# --- FUNCIÓN PRINCIPAL DEL NIVEL 1 (CORREGIDA) ---
+# --- FUNCIÓN PRINCIPAL DEL NIVEL 1 (MODIFICADA) ---
 def run_level(ventana, precargados, img_btn_regresar, REGRESAR_RECT):
     
     fondo_nivel, player_group, obstaculo_group, meta_group, coleccionable_group = precargados
@@ -225,7 +256,7 @@ def run_level(ventana, precargados, img_btn_regresar, REGRESAR_RECT):
     ANCHO = ventana.get_width()
     clock = pygame.time.Clock()
     
-    btn_pausa = BotonSimple(ANCHO - 60, 20, 40, 40, PATH_BTN_PAUSA, "PAUSE")
+    btn_pausa = BotonSimple(ANCHO - 60, 20, 40, 40, PATH_BTN_PAUSA, "PAUSE") # Ahora BotonSimple está definido
     
     start_time = time.time() 
     is_paused = False 
@@ -247,7 +278,6 @@ def run_level(ventana, precargados, img_btn_regresar, REGRESAR_RECT):
             if event.type == pygame.QUIT:
                 pygame.quit(); sys.exit()
             
-            # 🚨 CORRECCIÓN DE PAUSA: Solo pausa si NO está ya en pausa
             if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE and not is_paused: 
                 is_paused = True
                 pause_start_time = time.time()
@@ -257,11 +287,10 @@ def run_level(ventana, precargados, img_btn_regresar, REGRESAR_RECT):
                     is_paused = True
                     pause_start_time = time.time()
 
-        # 2. LÓGICA DE PAUSA (CON AUDIO)
+        # 2. LÓGICA DE PAUSA
         if is_paused:
-            audio_manager.pause_music() # PAUSA la música (corregido en audio_manager.py)
+            audio_manager.pause_music()
             
-            # Dibujar estado congelado
             ventana.blit(fondo_nivel, (0, 0)) 
             player_group.draw(ventana)
             obstaculo_group.draw(ventana) 
@@ -278,14 +307,12 @@ def run_level(ventana, precargados, img_btn_regresar, REGRESAR_RECT):
                 is_paused = False
                 pause_duration = time.time() - pause_start_time
                 start_time += pause_duration 
-                audio_manager.unpause_music() # REANUDAR la música
-                
+                audio_manager.unpause_music()
             elif accion_pausa == "REINTENTAR":
-                audio_manager.stop_music() # DETENER la música
+                audio_manager.stop_music()
                 return "REINTENTAR", None, None
-                
             elif accion_pausa == "SELECTOR_NIVEL": 
-                audio_manager.stop_music() # DETENER la música
+                audio_manager.stop_music()
                 return "SELECTOR_NIVEL", None, None 
                 
             continue 
@@ -303,14 +330,31 @@ def run_level(ventana, precargados, img_btn_regresar, REGRESAR_RECT):
         # ACTUALIZAR Y COLISIONES
         player = player_group.sprites()[0] 
         player_group.update(obstaculo_group) 
-        coleccionable_group.update(dt) # Actualización de animación
+        coleccionable_group.update(dt) 
         
         collected_items = pygame.sprite.spritecollide(player, coleccionable_group, True)
+        
+        # 🚨 LÓGICA CLAVE DE COLECCIONABLES (CORREGIDA para Bonificación de Tiempo y SFX)
         for item in collected_items:
-            if hasattr(item, 'index') and item.index in [3, 4, 5]:
-                penalizacion_total += TIEMPO_PENALIZACION
-            else:
+            
+            # Usamos get_effect_value() para determinar si es bueno (devuelve > 0.0)
+            bonus_speed = item.get_effect_value()
+            
+            if bonus_speed > 0:
+                # 🎊 ¡COLECCIONABLE BUENO! 🎊
+                audio_manager.play_collect_good() # 👈 Reproducir SFX bueno
+                
+                player.increase_speed(bonus_speed) 
+                # Ganar tiempo (reducir la penalización total)
+                penalizacion_total = max(0, penalizacion_total - TIEMPO_BONIFICACION)
+                
                 coleccionables_recogidos += 1
+                
+            else: 
+                # 💥 COLECCIONABLE MALO! 💥 (get_effect_value devuelve 0.0)
+                audio_manager.play_collect_bad() # 👈 Reproducir SFX malo
+                
+                penalizacion_total += TIEMPO_PENALIZACION
             
         # DETECCIÓN DE META CONDICIONAL
         if pygame.sprite.spritecollide(player, meta_group, False):

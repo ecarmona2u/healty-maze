@@ -12,7 +12,7 @@ class Obstaculo(pygame.sprite.Sprite):
         
         # 2. Rellenar con un color completamente transparente (canal alfa 0)
         # El formato es (R, G, B, A), donde A=0 significa invisible.
-        self.image.fill((0,0,0,0)) #COLOCAR 0,0,0,0 PARA NO VEL / COLOCA color PARA VER 
+        self.image.fill((color)) #COLOCAR 0,0,0,0 PARA NO VEL / COLOCA color PARA VER 
         
         # 3. Obtener el rectángulo (zona de colisión)
         self.rect = self.image.get_rect()
