@@ -13,10 +13,10 @@ import loading_screen
 from audio_manager import audio_manager # 💡 IMPORTACIÓN DE LA INSTANCIA GLOBAL
 
 # --- CONSTANTES ---
-PATH_FONDO_NIVEL_1 = "recursos/FondoNivel2.jpg" 
+PATH_FONDO_NIVEL_2 = "recursos/FondoNivel2.jpg" 
 AZUL_FALLBACK = (50, 50, 150)
 NUM_COLECCIONABLES_REQUERIDOS = 6 
-TIEMPO_LIMITE_SEGUNDOS = 30
+TIEMPO_LIMITE_SEGUNDOS = 300
 TIEMPO_PENALIZACION = 2
 TIEMPO_BONIFICACION = 0 # 💡 NUEVA CONSTANTE
 COLECCIONABLES_BUENOS_INDICES = [6, 7, 8] 
@@ -72,7 +72,7 @@ def setup_level(player):
         (1, 82, 1269, 19),
         (1269, 99, 17, 619),
         (1, 707, 1279, 13),
-        (2, 718, 17, 622),
+        (0, 119, 7, 586),
         #OBSTACULO MESAS
         (102, 142, 135, 49),#1
         (316, 142, 290, 46),#2
@@ -113,19 +113,19 @@ def setup_level(player):
     
     # COLECCIONABLES (Índices 0-2 BUENOS, 3-5 MALOS)
     coleccionables_coords = [
-        (24, 186, 6), 
-        (347, 217, 7), 
-        (257, 644, 8), 
-        (595, 628, 7), 
-        (807, 391, 6), 
-        (574, 191, 8), 
+        (223, 233, 6), 
+        (1062, 455, 6), 
+        (132, 500, 7), 
+        (639, 426, 7),
+        (380, 445, 8), 
+        (855, 600, 8), 
         # Malos
-        (430, 416, 9), 
-        (186, 510, 10), 
-        (974, 648, 11), 
-        (1192, 510, 9), 
-        (1021, 265, 10), 
-        (1207, 205, 11) 
+        (641, 173, 9), 
+        (220, 622, 9), 
+        (1220, 529, 10), 
+        (795, 342, 10), 
+        (465, 233, 11), 
+        (1047, 242, 11) 
     ]
 
     for x, y, index in coleccionables_coords:
@@ -141,7 +141,7 @@ def preload_level(ventana, character_data):
     
     # 1. Cargar Fondo
     try:
-        fondo_nivel = pygame.image.load(PATH_FONDO_NIVEL_1).convert()
+        fondo_nivel = pygame.image.load(PATH_FONDO_NIVEL_2).convert()
         fondo_nivel = pygame.transform.scale(fondo_nivel, (ANCHO, ALTO))
     except pygame.error as e:
         fondo_nivel = pygame.Surface((ANCHO, ALTO)); fondo_nivel.fill(AZUL_FALLBACK)

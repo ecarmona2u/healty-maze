@@ -22,8 +22,8 @@ class Player(pygame.sprite.Sprite):
         self.rect = self.image.get_rect(topleft=start_pos)
         
         # --- ATRIBUTO DE VELOCIDAD CLAVE ---
-        self.speed = 2.0 # velocidad de personaje (Aseguramos que sea float para las sumas)
-        
+        self.speed = 5.0 # velocidad de personaje (Aseguramos que sea float para las sumas)
+    
     def get_input(self):
         # ... (Método get_input sin cambios) ...
         keys = pygame.key.get_pressed()
