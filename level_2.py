@@ -13,10 +13,10 @@ import loading_screen
 from audio_manager import audio_manager # 💡 IMPORTACIÓN DE LA INSTANCIA GLOBAL
 
 # --- CONSTANTES ---
-PATH_FONDO_NIVEL_2 = "recursos/FondoNivel2.jpg" 
+PATH_FONDO_NIVEL_2 = "recursos/FondoNivel2-Definitivo.jpg" 
 AZUL_FALLBACK = (50, 50, 150)
 NUM_COLECCIONABLES_REQUERIDOS = 6 
-TIEMPO_LIMITE_SEGUNDOS = 300
+TIEMPO_LIMITE_SEGUNDOS = 30
 TIEMPO_PENALIZACION = 2
 TIEMPO_BONIFICACION = 0 # 💡 NUEVA CONSTANTE
 COLECCIONABLES_BUENOS_INDICES = [6, 7, 8] 
@@ -94,8 +94,8 @@ def setup_level(player):
         (712, 520, 87, 45),#17
         (895, 517, 137, 46),#18
         (1133, 435, 137, 45),#19
-        (1133, 596, 146, 29),#20
-        (1181, 579, 90, 15),#20.1
+        (1134, 578, 145, 29),#20
+        (1181, 562, 89, 15),#20.1
         (923, 644, 138, 41),#21
         (704, 644, 138, 41),#22
         (494, 645, 137, 40),#23
@@ -108,7 +108,7 @@ def setup_level(player):
         obstaculo_list.add(obstaculo)
         
     # DEFINICIÓN DE LA META
-    meta = Meta(955, 100, 160, 17)
+    meta = Meta(1241, 652, 27, 52)
     meta_group.add(meta)
     
     # COLECCIONABLES (Índices 0-2 BUENOS, 3-5 MALOS)
@@ -122,8 +122,8 @@ def setup_level(player):
         # Malos
         (641, 173, 9), 
         (220, 622, 9), 
-        (1220, 529, 10), 
-        (795, 342, 10), 
+        (1200, 510, 10), 
+        (795, 338, 10), 
         (465, 233, 11), 
         (1047, 242, 11) 
     ]
@@ -147,7 +147,7 @@ def preload_level(ventana, character_data):
         fondo_nivel = pygame.Surface((ANCHO, ALTO)); fondo_nivel.fill(AZUL_FALLBACK)
         
     # 2. Inicializar Personaje
-    start_position = (175, 250) 
+    start_position = (24, 224) 
     from player import Player
     player = Player(start_position, character_data, ANCHO, ALTO) 
     player_group = pygame.sprite.Group(player)
