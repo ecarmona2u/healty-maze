@@ -38,6 +38,17 @@ ANIMATION_SETS = {
     11: {"base_path": "recursos/coleccionables/malos/level_2", "filename": "HAMBURGUESA.PNG", "is_good": False}, 
     
     # Nota: Los coleccionables de level_3 pueden continuar la numeración si los agregas.
+        # COLECCIONABLES BUENOS (LEVEL 2)
+    12: {"base_path": "recursos/coleccionables/buenos/level_3", "filename": "BALON.PNG", "is_good": True, "effect": VELOCIDAD_BONUS}, 
+    13: {"base_path": "recursos/coleccionables/buenos/level_3", "filename": "GORRA.PNG", "is_good": True, "effect": VELOCIDAD_BONUS}, 
+    14: {"base_path": "recursos/coleccionables/buenos/level_3", "filename": "JABON.PNG", "is_good": True, "effect": VELOCIDAD_BONUS}, 
+    15: {"base_path": "recursos/coleccionables/buenos/level_3", "filename": "PROTECTOR_SOLAR.PNG", "is_good": True, "effect": VELOCIDAD_BONUS}, 
+
+
+    # COLECCIONABLES MALOS (LEVEL 2)
+    16: {"base_path": "recursos/coleccionables/malos/level_3", "filename": "BEB_ENER.PNG", "is_good": False}, 
+    17: {"base_path": "recursos/coleccionables/malos/level_3", "filename": "JUEGO.PNG", "is_good": False}, 
+    18: {"base_path": "recursos/coleccionables/malos/level_3", "filename": "SILLA.PNG", "is_good": False}, 
 }
 
 MAX_INDEX = 11 # El índice máximo ahora es 11

@@ -13,13 +13,13 @@ import loading_screen
 from audio_manager import audio_manager # 💡 IMPORTACIÓN DE LA INSTANCIA GLOBAL
 
 # --- CONSTANTES ---
-PATH_FONDO_NIVEL_1 = "recursos/FondoNivel1.jpg" 
+PATH_FONDO_NIVEL_1 = "recursos/FondoNivel3.png" 
 AZUL_FALLBACK = (50, 50, 150)
-NUM_COLECCIONABLES_REQUERIDOS = 6 
-TIEMPO_LIMITE_SEGUNDOS = 30
+NUM_COLECCIONABLES_REQUERIDOS = 8 
+TIEMPO_LIMITE_SEGUNDOS = 60
 TIEMPO_PENALIZACION = 2
-TIEMPO_BONIFICACION = 2 # 💡 NUEVA CONSTANTE
-COLECCIONABLES_BUENOS_INDICES = [0, 1, 2] 
+TIEMPO_BONIFICACION = 0 # 💡 NUEVA CONSTANTE
+COLECCIONABLES_BUENOS_INDICES = [12, 13, 14, 15] 
 
 # --- CONSTANTES DE PAUSA ---
 PATH_BTN_PAUSA = "recursos/btn_pausa.png"
@@ -69,15 +69,7 @@ def setup_level(player):
     
     # DEFINICIÓN DE OBSTÁCULOS
     obstaculos_coords = [
-        (0, 110, 955, 20), (1116, 110, 164, 20), (0, 129, 13, 700), 
-        (1262, 129, 16, 700), (0, 700, 1280, 20), (94, 213, 73, 72), 
-        (94, 213, 229, 20), (251, 213, 73, 178), (13, 371, 240, 20),
-        (488, 128, 73, 309), (551, 417, 246, 20), (724, 417, 73, 174),
-        (330, 519, 467, 20), (330, 534, 73, 55), (93, 571, 310, 20),
-        (93, 467, 73, 124), (488, 639, 73, 67), (1116, 127, 73, 105), 
-        (646, 212, 472, 20), (646, 225, 73, 110), (711, 315, 321, 20),
-        (1116, 315, 73, 122), (880, 417, 240, 20), (880, 432, 73, 157),
-        (1188, 571, 73, 20), (1032, 572, 73, 132)
+
     ]
     
     for x, y, w, h in obstaculos_coords:
@@ -90,11 +82,24 @@ def setup_level(player):
     
     # COLECCIONABLES (Índices 0-2 BUENOS, 3-5 MALOS)
     coleccionables_coords = [
-        (24, 186, 0), (347, 217, 2), (257, 644, 1), (595, 628, 2), 
-        (807, 391, 0), (574, 191, 1), 
+        (24, 186, 12), 
+        (347, 217, 13), 
+        (257, 644, 14), 
+        (595, 628, 15), 
+        (807, 391, 12), 
+        (574, 191, 13),
+        (100, 200, 14),
+        (150, 250, 15),
         # Malos
-        (430, 416, 3), (186, 510, 4), (974, 648, 5), (1192, 510, 3), 
-        (1021, 265, 4), (1207, 205, 5) 
+        (430, 416, 16), 
+        (186, 510, 17), 
+        (974, 648, 18), 
+        (1192, 510, 16), 
+        (1021, 265, 17), 
+        (1207, 205, 18),
+        (1207, 205, 16),
+        (1207, 205, 17),
+        (1207, 205, 18)
     ]
 
     for x, y, index in coleccionables_coords:
