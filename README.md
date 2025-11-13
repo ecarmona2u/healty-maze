@@ -24,8 +24,6 @@ escenarios futuros hacia 2050.
 ## Previews
 Selección de personajes:
 
-![Selección de personaje.](/recursos/elementos_de_github/selector.png "Selección de personaje")
+![Selección de personaje.](/recursos/readme/Personajes.png "Selección de personaje")
 
-Gameplays:
-
-![Gameplay Win.](/recursos/elementos_de_github/ganar.gif "Gameplay Win") ![Gameplay Lose.](/recursos/elementos_de_github/perder.gif "Gameplay Lose")
+![Gameplay](/recursos/reame/gameplay.gif "Gameplay")
