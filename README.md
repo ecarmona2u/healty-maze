@@ -21,8 +21,7 @@ de niños en edad escolar.
  * Generar un análisis de cómo la propuesta puede escalarse y mantenerse vigente en
 escenarios futuros hacia 2050.
 
-## Previews
-Selección de personajes:
+## Preview
 
 ![Selección de personaje.](/recursos/readme/Personajes.png "Selección de personaje")
 
