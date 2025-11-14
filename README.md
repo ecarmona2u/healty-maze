@@ -26,4 +26,4 @@ Selección de personajes:
 
 ![Selección de personaje.](/recursos/readme/Personajes.png "Selección de personaje")
 
-![Gameplay](/recursos/reame/gameplay.gif "Gameplay")
+![Gameplay](/recursos/readme/gameplay.gif "Gameplay")
