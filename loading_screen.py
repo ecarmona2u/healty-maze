@@ -6,7 +6,7 @@ import time
 
 # --- CONSTANTES ---
 # Define la ruta a la imagen que quieres usar como fondo de carga
-PATH_LOADING_BACKGROUND = "recursos/fondo_loading.png" 
+PATH_LOADING_BACKGROUND = "recursos/loading_nivel_1.png" 
 
 # Duración mínima en segundos que la pantalla estará visible
 MIN_DISPLAY_TIME = 5 

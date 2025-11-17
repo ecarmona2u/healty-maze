@@ -8,7 +8,7 @@ class Meta(pygame.sprite.Sprite):
         
         # Crear superficie transparente (como lo hiciste con Obstaculo)
         self.image = pygame.Surface([ancho, alto], pygame.SRCALPHA)
-        self.image.fill((color)) #COLOCAR 0,0,0,0 PARA NO VEL / COLOCA color PARA VER
+        self.image.fill((0,0,0,0)) #COLOCAR 0,0,0,0 PARA NO VEL / COLOCA color PARA VER
         
         # Rectángulo de colisión
         self.rect = self.image.get_rect()

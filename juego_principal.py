@@ -19,7 +19,7 @@ from audio_manager import audio_manager
 pygame.init()
 pygame.font.init() 
 
-ANCHO, ALTO = 1280, 720  
+ANCHO, ALTO = 1280, 720   
 surface = pygame.display.set_mode((ANCHO, ALTO))
 pygame.display.set_caption("Juego Pygame")
 clock = pygame.time.Clock()

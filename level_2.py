@@ -16,7 +16,7 @@ from audio_manager import audio_manager # 💡 IMPORTACIÓN DE LA INSTANCIA GLOB
 PATH_FONDO_NIVEL_1 = "recursos/FondoNivel2.jpg" 
 AZUL_FALLBACK = (50, 50, 150)
 NUM_COLECCIONABLES_REQUERIDOS = 6 
-TIEMPO_LIMITE_SEGUNDOS = 30
+TIEMPO_LIMITE_SEGUNDOS = 120
 TIEMPO_PENALIZACION = 2
 TIEMPO_BONIFICACION = 0 # 💡 NUEVA CONSTANTE
 COLECCIONABLES_BUENOS_INDICES = [6, 7, 8] 
@@ -147,7 +147,7 @@ def preload_level(ventana, character_data):
         fondo_nivel = pygame.Surface((ANCHO, ALTO)); fondo_nivel.fill(AZUL_FALLBACK)
         
     # 2. Inicializar Personaje
-    start_position = (175, 250) 
+    start_position = (24, 224) 
     from player import Player
     player = Player(start_position, character_data, ANCHO, ALTO) 
     player_group = pygame.sprite.Group(player)

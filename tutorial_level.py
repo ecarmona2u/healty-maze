@@ -14,7 +14,7 @@ from audio_manager import audio_manager # Importación correcta del gestor de au
 PATH_FONDO_TUTORIAL = "recursos/FondoTutorial.png" 
 AZUL_FALLBACK = (50, 50, 150)
 NUM_COLECCIONABLES_REQUERIDOS = 2 
-TIEMPO_LIMITE_SEGUNDOS = 30
+TIEMPO_LIMITE_SEGUNDOS = 240
 TIEMPO_PENALIZACION = 3 
 
 # --- CONSTANTES DE PAUSA (Completas y Corregidas) ---

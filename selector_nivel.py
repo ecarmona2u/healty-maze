@@ -19,16 +19,16 @@ COLOR_REGRESAR_FALLBACK = (200, 50, 50)
 # Paths de las imágenes de nivel con COORDENADAS FIJAS (x, y) y TAMAÑO INDIVIDUAL
 NIVEL_PATHS = {
     # Tutorial: Usa el tamaño por defecto (250x200)
-    'tutorial': {"path": "recursos/tutorial_img.png", "pos_x": 900, "pos_y": 600, "width":270 , "height": 100}, 
+    'tutorial': {"path": "recursos/nivel_0_img.png", "pos_x": 502, "pos_y": 132, "width":273 , "height": 152}, 
     
     # Nivel 1: Tamaño grande (350x250)
-    'nivel_1': {"path": "recursos/nivel_1_img.png", "pos_x": 285, "pos_y": 142, "width": 348, "height": 154}, 
+    'nivel_1': {"path": "recursos/nivel_1_img.png", "pos_x": 24, "pos_y": 386, "width": 297, "height": 204}, 
     
     # Nivel 2: Tamaño pequeño (150x150)
-    'nivel_2': {"path": "recursos/nivel_2_img.png", "pos_x": 825, "pos_y": 261, "width": 305, "height": 223}, # <-- OK
+    'nivel_2': {"path": "recursos/nivel_2_img.png", "pos_x": 474, "pos_y": 308, "width": 377, "height": 282}, # <-- OK
     
     # Nivel 3: Usa el tamaño por defecto (250x200)
-    'nivel_3': {"path": "recursos/nivel_3_img.png", "pos_x": 294, "pos_y": 479, "width": 312, "height": 167}, # <-- OK
+    'nivel_3': {"path": "recursos/nivel_3_img.png", "pos_x": 943, "pos_y": 284, "width": 317, "height": 313}, # <-- OK
 }
 PATH_FONDO = "recursos/fondo_selector_nivel.png"
 
