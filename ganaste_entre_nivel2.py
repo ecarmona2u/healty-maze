@@ -1,10 +1,8 @@
-# ganaste_entre_nivel.py 
-
 import pygame
 import sys
 
 # --- CONSTANTES DE RECURSOS ---
-PATH_FONDO = "recursos/fondo_victoria1.png"
+PATH_FONDO = "recursos/fondo_victoria2.png"
 PATH_BTN_NEXT = "recursos/btn_siguiente.png" 
 PATH_BTN_MENU = "recursos/btn_menu.png"     
 
@@ -12,14 +10,12 @@ BLANCO = (255, 255, 255)
 
 # --- VALORES DE RETORNO ---
 RETURN_NEXT_LEVEL = "NEXT_LEVEL"
-# CAMBIO 1: Cambiar el valor de retorno para indicar la ejecución de LEVEL_2
-# En tu script principal (donde llamas a run_pantalla_ganaste) este valor
-# debe ser interpretado como una orden para ejecutar level_2.py.
-RETURN_LEVEL_2 = "LEVEL_2" 
+# 💡 RESTABLECEMOS a SELECTOR_NIVEL para el botón de menú
+RETURN_SELECTOR_NIVEL = "SELECTOR_NIVEL" 
 RETURN_REINTENTAR = "REINTENTAR" 
 
 
-# CLASE BOTON (Sin cambios)
+# CLASE BOTON (Necesaria para pantallas de Ganar y Perder)
 class Boton:
     """Clase para crear botones con imagen y acción."""
     def __init__(self, x, y, ancho, alto, texto, accion, path_imagen):
@@ -62,7 +58,7 @@ def run_pantalla_ganaste(ventana, img_btn_regresar=None, REGRESAR_RECT=None):
     ANCHO, ALTO = ventana.get_size()
     clock = pygame.time.Clock()
     
-    # 1. Cargar Fondo (Sin cambios)
+    # 1. Cargar Fondo
     try:
         fondo = pygame.image.load(PATH_FONDO).convert()
         fondo = pygame.transform.scale(fondo, (ANCHO, ALTO))
@@ -70,30 +66,30 @@ def run_pantalla_ganaste(ventana, img_btn_regresar=None, REGRESAR_RECT=None):
         print(f"Error cargando fondo: {PATH_FONDO}. Usando color sólido.")
         fondo = pygame.Surface((ANCHO, ALTO)); fondo.fill((50, 50, 50))
 
-    # 2. Configuración Común de Botones (Sin cambios)
+    # 2. Configuración Común de Botones
     BTN_W_GRANDE, BTN_H_GRANDE = 300, 90 
     BTN_W_PEQUENO, BTN_H_PEQUENO = 90, 90 
     BTN_Y = 550
     
     # 3. Creación de Botones
 
-    # Botón 1: SIGUIENTE NIVEL (Grande, Derecha - Sin cambios)
+    # Botón 1: SIGUIENTE NIVEL (Grande, Derecha) -> Mandará a Level 3
     btn_siguiente = Boton(
         830, BTN_Y, BTN_W_GRANDE, BTN_H_GRANDE, 
         "SIGUIENTE NIVEL", 
-        RETURN_NEXT_LEVEL,
+        RETURN_NEXT_LEVEL, # <-- Este valor hará que juego_principal cargue nivel 3
         PATH_BTN_NEXT 
     )
     
     # Botón 2: SELECTOR DE NIVEL (Pequeño, Izquierda)
     btn_menu = Boton(
         350, BTN_Y, BTN_W_PEQUENO, BTN_H_PEQUENO, 
-        "LEVEL 2", # CAMBIO 2: Opcional, solo el texto
-        RETURN_LEVEL_2, # <--- CAMBIO 3: Usar la nueva constante RETURN_LEVEL_2
+        "NIVELES", 
+        RETURN_SELECTOR_NIVEL, # <-- Devuelve al selector de nivel
         PATH_BTN_MENU 
     )
 
-    # 4. Bucle principal (Solo se adapta el return)
+    # 4. Bucle principal
     running = True
     while running:
         for event in pygame.event.get():
@@ -114,12 +110,10 @@ def run_pantalla_ganaste(ventana, img_btn_regresar=None, REGRESAR_RECT=None):
         if accion_menu:
             running = False
             # Devuelve 3 valores
-            # CAMBIO 4: Devolver el nuevo valor de acción
-            return RETURN_LEVEL_2, None, None 
+            return RETURN_SELECTOR_NIVEL, None, None 
 
         pygame.display.flip()
         clock.tick(60)
         
     # Fallback
-    # CAMBIO 5: Fallback también a la nueva acción
-    return RETURN_LEVEL_2, None, None
+    return RETURN_SELECTOR_NIVEL, None, None

@@ -33,7 +33,7 @@ def run_pantalla_derrota(ventana):
     
     # 3. Creación de Botones
     btn_reintentar = Boton(
-        600, BTN_Y, BTN_W_GRANDE, BTN_H_GRANDE, 
+        800, BTN_Y, BTN_W_GRANDE, BTN_H_GRANDE, 
         "REINTENTAR", 
         RETURN_REINTENTAR,
         PATH_BTN_REINTENTAR

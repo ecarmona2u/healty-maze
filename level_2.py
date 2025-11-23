@@ -1,24 +1,23 @@
-# level_1.py (CÓDIGO COMPLETO Y CORREGIDO con lógica de tiempo y SFX)
-
 import pygame
 from player import Player 
 from obstaculo import Obstaculo 
 from meta import Meta 
-from ganaste_entre_nivel import run_pantalla_ganaste 
+# 💡 CAMBIO CLAVE: Importar la pantalla de victoria específica para este nivel
+from ganaste_entre_nivel2 import run_pantalla_ganaste as run_pantalla_ganaste_2 
 from pantalla_derrota import run_pantalla_derrota
 from coleccionable import Coleccionable 
 import sys
 import time 
 import loading_screen 
-from audio_manager import audio_manager # 💡 IMPORTACIÓN DE LA INSTANCIA GLOBAL
+from audio_manager import audio_manager 
 
 # --- CONSTANTES ---
 PATH_FONDO_NIVEL_1 = "recursos/FondoNivel2.jpg" 
 AZUL_FALLBACK = (50, 50, 150)
 NUM_COLECCIONABLES_REQUERIDOS = 6 
-TIEMPO_LIMITE_SEGUNDOS = 120
+TIEMPO_LIMITE_SEGUNDOS = 1
 TIEMPO_PENALIZACION = 2
-TIEMPO_BONIFICACION = 0 # 💡 NUEVA CONSTANTE
+TIEMPO_BONIFICACION = 0 
 COLECCIONABLES_BUENOS_INDICES = [6, 7, 8] 
 
 # --- CONSTANTES DE PAUSA ---
@@ -248,7 +247,7 @@ def run_pause_menu(ventana):
         pygame.display.flip()
         pygame.time.Clock().tick(30) 
 
-# --- FUNCIÓN PRINCIPAL DEL NIVEL 1 (MODIFICADA) ---
+# --- FUNCIÓN PRINCIPAL DEL NIVEL 2 (MODIFICADA para llamar a ganaste_entre_nivel2.py) ---
 def run_level(ventana, precargados, img_btn_regresar, REGRESAR_RECT):
     
     fondo_nivel, player_group, obstaculo_group, meta_group, coleccionable_group = precargados
@@ -342,7 +341,7 @@ def run_level(ventana, precargados, img_btn_regresar, REGRESAR_RECT):
             
             if bonus_speed > 0:
                 # 🎊 ¡COLECCIONABLE BUENO! 🎊
-                audio_manager.play_collect_good() # 👈 Reproducir SFX bueno
+                audio_manager.play_collect_good() 
                 
                 player.increase_speed(bonus_speed) 
                 # Ganar tiempo (reducir la penalización total)
@@ -352,7 +351,7 @@ def run_level(ventana, precargados, img_btn_regresar, REGRESAR_RECT):
                 
             else: 
                 # 💥 COLECCIONABLE MALO! 💥 (get_effect_value devuelve 0.0)
-                audio_manager.play_collect_bad() # 👈 Reproducir SFX malo
+                audio_manager.play_collect_bad() 
                 
                 penalizacion_total += TIEMPO_PENALIZACION
             
@@ -361,7 +360,8 @@ def run_level(ventana, precargados, img_btn_regresar, REGRESAR_RECT):
             running = False 
             audio_manager.stop_music()
             if coleccionables_recogidos >= NUM_COLECCIONABLES_REQUERIDOS:
-                return run_pantalla_ganaste(ventana, img_btn_regresar, REGRESAR_RECT) 
+                # 💡 LLAMAR A LA NUEVA PANTALLA DE VICTORIA
+                return run_pantalla_ganaste_2(ventana, img_btn_regresar, REGRESAR_RECT) 
             else:
                 accion_derrota = run_pantalla_derrota(ventana) 
                 if accion_derrota[0] == "MENU": return "SELECTOR_NIVEL", None, None 

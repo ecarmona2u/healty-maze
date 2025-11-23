@@ -1,10 +1,8 @@
-# juego_principal.py (CÓDIGO COMPLETO Y CORREGIDO para Nivel 2 y 3)
-
 import pygame
 import sys 
 import level_1 
-import level_2 # <-- NUEVO
-import level_3 # <-- NUEVO
+import level_2
+import level_3
 import selector_personaje
 import selector_nivel
 import ajustes 
@@ -52,7 +50,7 @@ except pygame.error:
 
 # --- DEFINICIÓN Y CARGA DE BOTONES ---
 botones_data = [
-    {'action': 'iniciar_nivel', 'pos': (590, 260), 'path': PATH_INICIAR, 'size': (100, 100)}, 
+    {'action': 'iniciar_nivel', 'pos': (530, 280), 'path': PATH_INICIAR, 'size': (200, 100)}, 
     {'action': 'ajustes', 'pos': (14, 9), 'path': PATH_AJUSTES, 'size': (60, 60)}, 
     {'action': 'salir', 'pos': (1215, 10), 'path': PATH_SALIR, 'size': (60, 60)},
 ]
@@ -161,18 +159,18 @@ while True:
         if nivel_id:
             nivel_actual = nivel_id
             if nivel_actual == 'nivel_1':
-                estado_actual = 'precarga_nivel_1' # <-- Corregido el nombre
+                estado_actual = 'precarga_nivel_1'
             elif nivel_actual == 'nivel_2':
-                estado_actual = 'precarga_nivel_2' # <-- NUEVO
+                estado_actual = 'precarga_nivel_2'
             elif nivel_actual == 'nivel_3':
-                estado_actual = 'precarga_nivel_3' # <-- NUEVO
+                estado_actual = 'precarga_nivel_3'
             elif nivel_actual == 'tutorial':
                 estado_actual = 'precarga_tutorial'
         else:
             estado_actual = 'seleccionar_personaje'
 
     # ESTADO: Precarga NIVEL 1
-    elif estado_actual == 'precarga_nivel_1': # <-- Corregido el nombre
+    elif estado_actual == 'precarga_nivel_1':
         audio_manager.play_music('nivel_1') 
         
         # 1. Precarga los recursos
@@ -189,21 +187,21 @@ while True:
         
         loading_screen.run_loading_screen(surface)
         
-        estado_actual = 'jugando_nivel_1' # <-- Corregido el nombre
+        estado_actual = 'jugando_nivel_1'
 
     # ESTADO: Precarga NIVEL 2
-    elif estado_actual == 'precarga_nivel_2': # <-- NUEVO
+    elif estado_actual == 'precarga_nivel_2':
         audio_manager.play_music('nivel_2') 
         nivel_recursos_precargados = level_2.preload_level(surface, personaje_seleccionado)
         loading_screen.run_loading_screen(surface)
-        estado_actual = 'jugando_nivel_2' # <-- NUEVO
+        estado_actual = 'jugando_nivel_2'
 
     # ESTADO: Precarga NIVEL 3
-    elif estado_actual == 'precarga_nivel_3': # <-- NUEVO
+    elif estado_actual == 'precarga_nivel_3':
         audio_manager.play_music('nivel_3') 
         nivel_recursos_precargados = level_3.preload_level(surface, personaje_seleccionado)
         loading_screen.run_loading_screen(surface)
-        estado_actual = 'jugando_nivel_3' # <-- NUEVO
+        estado_actual = 'jugando_nivel_3'
 
     # ESTADO: Precarga TUTORIAL
     elif estado_actual == 'precarga_tutorial':
@@ -218,7 +216,7 @@ while True:
         estado_actual = 'jugando_tutorial'
             
     # 3. ESTADO: JUGANDO (NIVEL 1)
-    elif estado_actual == 'jugando_nivel_1': # <-- Corregido el nombre
+    elif estado_actual == 'jugando_nivel_1':
         
         resultado, img_retorno, rect_retorno = level_1.run_level(
             surface, 
@@ -227,7 +225,7 @@ while True:
             REGRESAR_RECT
         )
         
-        if resultado not in ('REINTENTAR', 'NEXT_LEVEL'):
+        if resultado not in ('REINTENTAR', 'NEXT_LEVEL', 'LEVEL_2'): # Añadir LEVEL_2
             nivel_recursos_precargados = None
             
         if resultado == 'MENU':
@@ -236,12 +234,19 @@ while True:
             
         elif resultado == 'REINTENTAR':
             audio_manager.stop_music() 
-            estado_actual = 'precarga_nivel_1' # <-- Corregido el nombre
+            estado_actual = 'precarga_nivel_1'
             
         elif resultado == 'NEXT_LEVEL':
+            # 💡 CAMBIO CLAVE: Al ganar Nivel 1, va directamente a la precarga del Nivel 2
             audio_manager.stop_music() 
-            nivel_en_proceso.run_nivel_en_proceso(surface, img_retorno, rect_retorno)
-            estado_actual = 'seleccionar_nivel' 
+            nivel_actual = 'nivel_2' # Establece el nivel actual para la precarga
+            estado_actual = 'precarga_nivel_2' # Carga Nivel 2 inmediatamente
+            
+        elif resultado == 'LEVEL_2':
+            # 💡 MANEJO EXTRA: Si el botón de menú devuelve LEVEL_2, lo precarga
+            audio_manager.stop_music() 
+            nivel_actual = 'nivel_2'
+            estado_actual = 'precarga_nivel_2'
         
         elif resultado == 'SELECT_CHARACTER': 
             audio_manager.stop_music() 
@@ -254,7 +259,7 @@ while True:
             estado_actual = 'seleccionar_nivel'
 
     # ESTADO: JUGANDO (NIVEL 2)
-    elif estado_actual == 'jugando_nivel_2': # <-- NUEVO
+    elif estado_actual == 'jugando_nivel_2':
         
         resultado, img_retorno, rect_retorno = level_2.run_level(
             surface, 
@@ -269,14 +274,15 @@ while True:
         if resultado == 'MENU': estado_actual = 'menu'
         elif resultado == 'REINTENTAR': estado_actual = 'precarga_nivel_2'
         elif resultado == 'NEXT_LEVEL': 
-            audio_manager.stop_music() 
-            nivel_en_proceso.run_nivel_en_proceso(surface, img_retorno, rect_retorno)
-            estado_actual = 'seleccionar_nivel' 
+            # Si se gana Nivel 2, salta directamente a la precarga del Nivel 3
+            audio_manager.stop_music()
+            nivel_actual = 'nivel_3'
+            estado_actual = 'precarga_nivel_3' 
         elif resultado == 'SELECT_CHARACTER': estado_actual = 'seleccionar_personaje'
         elif resultado == 'SELECTOR_NIVEL': estado_actual = 'seleccionar_nivel'
     
     # ESTADO: JUGANDO (NIVEL 3)
-    elif estado_actual == 'jugando_nivel_3': # <-- NUEVO
+    elif estado_actual == 'jugando_nivel_3':
         
         resultado, img_retorno, rect_retorno = level_3.run_level(
             surface, 
