@@ -18,7 +18,7 @@ def run_loading_screen(ventana):
     """
     Muestra la imagen de fondo de carga escalada en un cuadro pequeño (modal) 
     en el centro de la ventana, de forma transparente, sobre el contenido ya dibujado 
-    (el nivel 2).
+    (el nivel 2). NO MUESTRA NINGÚN TEXTO.
     """
     
     ANCHO = ventana.get_width()
@@ -42,14 +42,11 @@ def run_loading_screen(ventana):
     MODAL_Y = ALTO // 2 - MODAL_HEIGHT // 2
     MODAL_POS = (MODAL_X, MODAL_Y)
     
-    # Prepara el texto de "Cargando..." y la instrucción
-    font = pygame.font.SysFont('Arial', 40, bold=True)
-    text_surface = font.render("¡NIVEL 2 CARGADO! ¡Click para empezar!", True, (255, 255, 255))
-    text_rect = text_surface.get_rect(center=(ANCHO // 2, MODAL_Y + MODAL_HEIGHT + 30))
+    # ❌ CÓDIGO ELIMINADO: Se ha quitado la inicialización de fuente y texto.
     
     # Capa de oscurecimiento semi-transparente para el fondo
     overlay = pygame.Surface((ANCHO, ALTO), pygame.SRCALPHA)
-    overlay.fill((0, 0, 0, 150)) # Negro con 150/255 de opacidad (se ve el nivel debajo)
+    overlay.fill((0, 0, 0, 0)) # Negro con 150/255 de opacidad (se ve el nivel debajo)
         
     start_time = time.time()
     running = True
@@ -81,8 +78,7 @@ def run_loading_screen(ventana):
         # 2. Dibuja la imagen modal en la posición central
         ventana.blit(imagen_modal, MODAL_POS)
         
-        # 3. Dibuja el texto de carga
-        ventana.blit(text_surface, text_rect)
+        # ❌ CÓDIGO ELIMINADO: Se ha quitado la línea para dibujar el texto.
 
         pygame.display.flip()
         clock.tick(60)

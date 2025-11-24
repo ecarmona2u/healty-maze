@@ -6,9 +6,7 @@ import level_3
 import selector_personaje
 import selector_nivel
 import ajustes 
-import nivel_en_proceso 
 from ganaste_entre_nivel import run_pantalla_ganaste 
-import loading_screen 
 import tutorial_level 
 # 🚨 CORRECCIÓN CLAVE: Importa la INSTANCIA para evitar el AttributeError
 from audio_manager import audio_manager 
@@ -173,34 +171,32 @@ while True:
     elif estado_actual == 'precarga_nivel_1':
         audio_manager.play_music('nivel_1') 
         
-        # 1. Precarga los recursos
+        # 1. Precarga los recursos (esto puede tardar)
         nivel_recursos_precargados = level_1.preload_level(surface, personaje_seleccionado)
         
-        # 2. Dibuja el fondo y la pantalla de carga
-        try:
-            fondo_nivel_1 = nivel_recursos_precargados[0]
-            surface.blit(fondo_nivel_1, (0, 0)) 
-            pygame.display.flip()
-        except (TypeError, IndexError):
-            surface.fill(COLOR_FONDO_NEGRO)
-            pygame.display.flip()
-        
-        loading_screen.run_loading_screen(surface)
+        # 💡 CORRECCIÓN DOBLE CARGA: Eliminamos la llamada directa aquí. 
+        # La pantalla de carga se mostrará cuando se entre al estado 'jugando_nivel_1'.
         
         estado_actual = 'jugando_nivel_1'
 
     # ESTADO: Precarga NIVEL 2
     elif estado_actual == 'precarga_nivel_2':
         audio_manager.play_music('nivel_2') 
+        # 1. Precarga los recursos
         nivel_recursos_precargados = level_2.preload_level(surface, personaje_seleccionado)
-        loading_screen.run_loading_screen(surface)
+        
+        # 💡 CORRECCIÓN DOBLE CARGA: Eliminamos la llamada directa aquí.
+        
         estado_actual = 'jugando_nivel_2'
 
     # ESTADO: Precarga NIVEL 3
     elif estado_actual == 'precarga_nivel_3':
         audio_manager.play_music('nivel_3') 
+        # 1. Precarga los recursos
         nivel_recursos_precargados = level_3.preload_level(surface, personaje_seleccionado)
-        loading_screen.run_loading_screen(surface)
+        
+        # 💡 CORRECCIÓN DOBLE CARGA: Eliminamos la llamada directa aquí.
+        
         estado_actual = 'jugando_nivel_3'
 
     # ESTADO: Precarga TUTORIAL
@@ -210,14 +206,14 @@ while True:
         # 1. Precarga los recursos
         nivel_recursos_precargados = tutorial_level.preload_tutorial_level(surface, personaje_seleccionado)
         
-        # 2. Muestra la pantalla de carga 
-        loading_screen.run_loading_screen(surface)
+        # 💡 CORRECCIÓN DOBLE CARGA: Eliminamos la llamada directa aquí. 
         
         estado_actual = 'jugando_tutorial'
             
     # 3. ESTADO: JUGANDO (NIVEL 1)
     elif estado_actual == 'jugando_nivel_1':
         
+        # level_1.run_level DEBE empezar llamando a loading_screen.run_loading_screen()
         resultado, img_retorno, rect_retorno = level_1.run_level(
             surface, 
             nivel_recursos_precargados, 
@@ -225,7 +221,7 @@ while True:
             REGRESAR_RECT
         )
         
-        if resultado not in ('REINTENTAR', 'NEXT_LEVEL', 'LEVEL_2'): # Añadir LEVEL_2
+        if resultado not in ('REINTENTAR', 'NEXT_LEVEL', 'LEVEL_2'): 
             nivel_recursos_precargados = None
             
         if resultado == 'MENU':
@@ -237,13 +233,11 @@ while True:
             estado_actual = 'precarga_nivel_1'
             
         elif resultado == 'NEXT_LEVEL':
-            # 💡 CAMBIO CLAVE: Al ganar Nivel 1, va directamente a la precarga del Nivel 2
             audio_manager.stop_music() 
-            nivel_actual = 'nivel_2' # Establece el nivel actual para la precarga
-            estado_actual = 'precarga_nivel_2' # Carga Nivel 2 inmediatamente
+            nivel_actual = 'nivel_2' 
+            estado_actual = 'precarga_nivel_2' 
             
         elif resultado == 'LEVEL_2':
-            # 💡 MANEJO EXTRA: Si el botón de menú devuelve LEVEL_2, lo precarga
             audio_manager.stop_music() 
             nivel_actual = 'nivel_2'
             estado_actual = 'precarga_nivel_2'
@@ -261,6 +255,7 @@ while True:
     # ESTADO: JUGANDO (NIVEL 2)
     elif estado_actual == 'jugando_nivel_2':
         
+        # level_2.run_level DEBE empezar llamando a loading_screen2.run_loading_screen()
         resultado, img_retorno, rect_retorno = level_2.run_level(
             surface, 
             nivel_recursos_precargados, 
@@ -274,7 +269,6 @@ while True:
         if resultado == 'MENU': estado_actual = 'menu'
         elif resultado == 'REINTENTAR': estado_actual = 'precarga_nivel_2'
         elif resultado == 'NEXT_LEVEL': 
-            # Si se gana Nivel 2, salta directamente a la precarga del Nivel 3
             audio_manager.stop_music()
             nivel_actual = 'nivel_3'
             estado_actual = 'precarga_nivel_3' 
@@ -284,6 +278,7 @@ while True:
     # ESTADO: JUGANDO (NIVEL 3)
     elif estado_actual == 'jugando_nivel_3':
         
+        # level_3.run_level DEBE empezar llamando a loading_screen2.run_loading_screen()
         resultado, img_retorno, rect_retorno = level_3.run_level(
             surface, 
             nivel_recursos_precargados, 
@@ -297,9 +292,8 @@ while True:
         if resultado == 'MENU': estado_actual = 'menu'
         elif resultado == 'REINTENTAR': estado_actual = 'precarga_nivel_3'
         elif resultado == 'NEXT_LEVEL': 
-            # Esto lleva a la pantalla 'Ganaste' final, luego al menú de niveles o principal
             audio_manager.stop_music() 
-            run_pantalla_ganaste(surface) # (Asumo que tienes una pantalla final de victoria)
+            run_pantalla_ganaste(surface) 
             estado_actual = 'seleccionar_nivel' 
         elif resultado == 'SELECT_CHARACTER': estado_actual = 'seleccionar_personaje'
         elif resultado == 'SELECTOR_NIVEL': estado_actual = 'seleccionar_nivel'
@@ -308,6 +302,7 @@ while True:
     # ESTADO: JUGANDO (TUTORIAL) 
     elif estado_actual == 'jugando_tutorial':
         
+        # tutorial_level.run_tutorial_level DEBE empezar llamando a loading_screen.run_loading_screen()
         resultado, img_retorno, rect_retorno = tutorial_level.run_tutorial_level(
             surface, 
             nivel_recursos_precargados, 
@@ -335,7 +330,7 @@ while True:
             estado_actual = 'menu'
 
 
-    # Solo hacemos flip si no estamos en un estado bloqueante que ya lo hizo
+    # Solo hacemos flip si no estamos en un estado bloqueante (como la pantalla de carga misma)
     if estado_actual not in ['precarga_nivel_1', 'precarga_nivel_2', 'precarga_nivel_3', 'precarga_tutorial']:
         pygame.display.flip()
         

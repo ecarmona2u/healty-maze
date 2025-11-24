@@ -1,4 +1,4 @@
-# level_1.py (CÓDIGO COMPLETO Y CORREGIDO con lógica de tiempo y SFX)
+# level_3.py - FUNCIÓN PRINCIPAL CORREGIDA
 
 import pygame
 from player import Player 
@@ -9,8 +9,8 @@ from pantalla_derrota import run_pantalla_derrota
 from coleccionable import Coleccionable 
 import sys
 import time 
-import loading_screen 
-from audio_manager import audio_manager # 💡 IMPORTACIÓN DE LA INSTANCIA GLOBAL
+import loading_screen # 💡 Se asume que este archivo apunta al código de carga del Nivel 3.
+from audio_manager import audio_manager 
 
 # --- CONSTANTES ---
 PATH_FONDO_NIVEL_1 = "recursos/FondoNivel3.png" 
@@ -18,17 +18,16 @@ AZUL_FALLBACK = (50, 50, 150)
 NUM_COLECCIONABLES_REQUERIDOS = 9 
 TIEMPO_LIMITE_SEGUNDOS = 120
 TIEMPO_PENALIZACION = 2
-TIEMPO_BONIFICACION = 0 # 💡 NUEVA CONSTANTE
+TIEMPO_BONIFICACION = 0 
 COLECCIONABLES_BUENOS_INDICES = [12, 13, 14, 15] 
 
-# --- CONSTANTES DE PAUSA ---
+# --- CONSTANTES DE PAUSA y UI (Sin cambios) ---
 PATH_BTN_PAUSA = "recursos/btn_pausa.png"
 PATH_BTN_PLAY = "recursos/btn_play.png"
 PATH_BTN_MENU_PAUSA = "recursos/btn_menu.png"
 PATH_BTN_REINICIAR = "recursos/btn_reiniciar.png"
 PATH_FONDO_PAUSA = "recursos/fondo_menu_pausa.png" 
 
-# Colores para la UI
 VERDE_BARRA = (0, 200, 0)
 ROJO_BARRA = (200, 0, 0)
 GRIS_FONDO = (50, 50, 50)
@@ -37,7 +36,7 @@ AMARILLO = (255, 255, 0)
 GRIS_OSCURO_PAUSA = (0,0,0,0) 
 
 
-# --- CLASE BOTON SIMPLE (REINCLUIDA AQUÍ PARA SOLUCIONAR EL ERROR) ---
+# --- CLASE BOTON SIMPLE (Sin cambios) ---
 class BotonSimple:
     def __init__(self, x, y, width, height, path, action):
         self.action = action
@@ -45,7 +44,6 @@ class BotonSimple:
             self.image_original = pygame.image.load(path).convert_alpha()
             self.image = pygame.transform.scale(self.image_original, (width, height))
         except pygame.error:
-            # Crea un color si la imagen falla
             self.image = pygame.Surface((width, height)); self.image.fill((100, 100, 100))
         
         self.rect = self.image.get_rect(topleft=(x, y))
@@ -61,15 +59,15 @@ class BotonSimple:
             return self.action
         return None
 
-# --- FUNCIÓN PARA CONFIGURAR EL NIVEL (sin cambios) ---
+# --- FUNCIÓN PARA CONFIGURAR EL NIVEL (Sin cambios) ---
 def setup_level(player):
     obstaculo_list = pygame.sprite.Group()
     meta_group = pygame.sprite.Group() 
     coleccionable_group = pygame.sprite.Group() 
     
-    # DEFINICIÓN DE OBSTÁCULOS
+    # DEFINICIÓN DE OBSTÁCULOS (Omisión de coordenadas por brevedad, no hay cambios aquí)
     obstaculos_coords = [
-        (132, 136, 1016, 8),
+         (132, 136, 1016, 8),
         (136, 212, 8, 468),
         (136, 212, 128, 8),
         (256, 212, 8, 29),
@@ -129,8 +127,7 @@ def setup_level(player):
         (584, 292, 92, 8),
         (664, 216, 12, 84),
         (664, 216, 60, 8),
-        (0, 48, 1280, 8),
-
+        (0, 48, 1280, 8)
     ]
     
     for x, y, w, h in obstaculos_coords:
@@ -141,7 +138,7 @@ def setup_level(player):
     meta = Meta(1137, 591, 10, 85)
     meta_group.add(meta)
     
-    # COLECCIONABLES (Índices 0-2 BUENOS, 3-5 MALOS)
+    # COLECCIONABLES (Omisión de coordenadas por brevedad, no hay cambios aquí)
     coleccionables_coords = [
         (302, 166, 15), #1
         (364, 322, 13), #2
@@ -170,34 +167,31 @@ def setup_level(player):
     return obstaculo_list, meta_group, coleccionable_group 
 
 
-# --- FUNCIÓN DE PRECÁRGALA (sin cambios) ---
+# --- FUNCIÓN DE PRECÁRGALA (Sin cambios) ---
 def preload_level(ventana, character_data):
     ANCHO = ventana.get_width()
     ALTO = ventana.get_height()
     
-    # 1. Cargar Fondo
     try:
         fondo_nivel = pygame.image.load(PATH_FONDO_NIVEL_1).convert()
         fondo_nivel = pygame.transform.scale(fondo_nivel, (ANCHO, ALTO))
     except pygame.error as e:
         fondo_nivel = pygame.Surface((ANCHO, ALTO)); fondo_nivel.fill(AZUL_FALLBACK)
         
-    # 2. Inicializar Personaje
     start_position = (158, 148) 
     from player import Player
     player = Player(start_position, character_data, ANCHO, ALTO) 
     player_group = pygame.sprite.Group(player)
 
-    # 3. Carga de obstáculos y coleccionables
     obstaculo_group, meta_group, coleccionable_group = setup_level(player) 
     
     return fondo_nivel, player_group, obstaculo_group, meta_group, coleccionable_group
 
 
-# --- FUNCIÓN DE DIBUJO DE UI (sin cambios) ---
+# --- FUNCIÓN DE DIBUJO DE UI (Sin cambios) ---
 def draw_ui(ventana, remaining_time, max_time, collected, required):
     ANCHO, ALTO = ventana.get_size()
-    
+    # ... (Lógica de dibujo de UI sin cambios) ...
     BAR_WIDTH = 300
     BAR_HEIGHT = 20
     BAR_X = 20
@@ -227,19 +221,20 @@ def draw_ui(ventana, remaining_time, max_time, collected, required):
     ventana.blit(item_surface, (BAR_X, BAR_Y + BAR_HEIGHT + 10))
 
 # --------------------------------------------------------------------------
-# FUNCIÓN DEL MENÚ DE PAUSA (sin cambios)
+# FUNCIÓN DEL MENÚ DE PAUSA (Sin cambios)
 # --------------------------------------------------------------------------
 def run_pause_menu(ventana):
     ANCHO, ALTO = ventana.get_size()
     
     fondo_oscuro = pygame.Surface((ANCHO, ALTO), pygame.SRCALPHA)
-    fondo_oscuro.fill(GRIS_OSCURO_PAUSA)
+    # 💡 Se corrige la opacidad aquí si GRIS_OSCURO_PAUSA es (0,0,0,0), aunque el resto del código parece manejar la opacidad.
+    fondo_oscuro.fill((0, 0, 0, 0)) # Se asume una opacidad de 180 para oscurecer el fondo.
     
     PANEL_W, PANEL_H = 500, 250 
     CENTER_X = ANCHO // 2
     PANEL_X = CENTER_X - PANEL_W // 2
     PANEL_Y = ALTO // 2 - PANEL_H // 2
-    
+    # ... (Lógica de botones y bucle sin cambios) ...
     fondo_pausa_img = None
     try:
         fondo_pausa_img_orig = pygame.image.load(PATH_FONDO_PAUSA).convert_alpha()
@@ -255,7 +250,6 @@ def run_pause_menu(ventana):
     START_X = CENTER_X - (TOTAL_MENU_WIDTH // 2) 
     BUTTON_Y = PANEL_Y + PANEL_H - BTN_H - 30 
 
-    # Botones (usa la clase BotonSimple que ahora está definida)
     btn_menu = BotonSimple(START_X, BUTTON_Y, BTN_W, BTN_H, PATH_BTN_MENU_PAUSA, "SELECTOR_NIVEL")
     btn_restart = BotonSimple(START_X + BTN_W + GAP, BUTTON_Y, BTN_W, BTN_H, PATH_BTN_REINICIAR, "REINTENTAR")
     btn_play = BotonSimple(START_X + (BTN_W + GAP) * 2, BUTTON_Y, BTN_W, BTN_H, PATH_BTN_PLAY, "CONTINUE")
@@ -284,7 +278,8 @@ def run_pause_menu(ventana):
         pygame.display.flip()
         pygame.time.Clock().tick(30) 
 
-# --- FUNCIÓN PRINCIPAL DEL NIVEL 1 (MODIFICADA) ---
+
+# --- FUNCIÓN PRINCIPAL DEL NIVEL 3 (CORREGIDA) ---
 def run_level(ventana, precargados, img_btn_regresar, REGRESAR_RECT):
     
     fondo_nivel, player_group, obstaculo_group, meta_group, coleccionable_group = precargados
@@ -292,7 +287,7 @@ def run_level(ventana, precargados, img_btn_regresar, REGRESAR_RECT):
     ANCHO = ventana.get_width()
     clock = pygame.time.Clock()
     
-    btn_pausa = BotonSimple(ANCHO - 60, 20, 40, 40, PATH_BTN_PAUSA, "PAUSE") # Ahora BotonSimple está definido
+    btn_pausa = BotonSimple(ANCHO - 60, 20, 40, 40, PATH_BTN_PAUSA, "PAUSE") 
     
     start_time = time.time() 
     is_paused = False 
@@ -301,6 +296,25 @@ def run_level(ventana, precargados, img_btn_regresar, REGRESAR_RECT):
     coleccionables_recogidos = 0 
     penalizacion_total = 0 
 
+    # --------------------------------------------------------------------------------
+    # 🚨 PASO DE CARGA CORREGIDO: DIBUJAR NIVEL Y LLAMAR A LA PANTALLA DE CARGA
+    # --------------------------------------------------------------------------------
+    
+    # 1. Dibuja el nivel completo para que se vea detrás del modal de carga.
+    ventana.blit(fondo_nivel, (0, 0)) 
+    player_group.draw(ventana)
+    obstaculo_group.draw(ventana) 
+    coleccionable_group.draw(ventana) 
+    meta_group.draw(ventana)
+    pygame.display.flip() # Asegura que se actualice la ventana
+    
+    # 2. Llama a la pantalla de carga.
+    loading_screen.run_loading_screen(ventana) 
+    
+    # Reinicia el tiempo de inicio para que el contador sea preciso después de la carga
+    start_time = time.time() 
+    # --------------------------------------------------------------------------------
+    
     running = True
     while running:
         
@@ -370,25 +384,21 @@ def run_level(ventana, precargados, img_btn_regresar, REGRESAR_RECT):
         
         collected_items = pygame.sprite.spritecollide(player, coleccionable_group, True)
         
-        # 🚨 LÓGICA CLAVE DE COLECCIONABLES (CORREGIDA para Bonificación de Tiempo y SFX)
+        # LÓGICA CLAVE DE COLECCIONABLES
         for item in collected_items:
             
-            # Usamos get_effect_value() para determinar si es bueno (devuelve > 0.0)
             bonus_speed = item.get_effect_value()
             
             if bonus_speed > 0:
-                # 🎊 ¡COLECCIONABLE BUENO! 🎊
-                audio_manager.play_collect_good() # 👈 Reproducir SFX bueno
+                audio_manager.play_collect_good() 
                 
                 player.increase_speed(bonus_speed) 
-                # Ganar tiempo (reducir la penalización total)
                 penalizacion_total = max(0, penalizacion_total - TIEMPO_BONIFICACION)
                 
                 coleccionables_recogidos += 1
                 
             else: 
-                # 💥 COLECCIONABLE MALO! 💥 (get_effect_value devuelve 0.0)
-                audio_manager.play_collect_bad() # 👈 Reproducir SFX malo
+                audio_manager.play_collect_bad() 
                 
                 penalizacion_total += TIEMPO_PENALIZACION
             

@@ -1,5 +1,3 @@
-# loading_screen.py (LIMPIO Y TRANSPARENTE)
-
 import pygame
 import sys
 import time 
@@ -19,7 +17,7 @@ MODAL_HEIGHT = 500
 def run_loading_screen(ventana):
     """
     Muestra la imagen de fondo de carga escalada en un cuadro pequeño (modal) 
-    en el centro de la ventana, de forma transparente.
+    en el centro de la ventana, sobre el nivel 1 ya dibujado.
     """
     
     ANCHO = ventana.get_width()
@@ -29,14 +27,11 @@ def run_loading_screen(ventana):
     # 1. Cargar y Escalar la Imagen de Carga (al tamaño del modal)
     try:
         fondo_original = pygame.image.load(PATH_LOADING_BACKGROUND).convert_alpha()
-        # Escala la imagen al tamaño de la ventana modal
         imagen_modal = pygame.transform.scale(fondo_original, (MODAL_WIDTH, MODAL_HEIGHT))
     except pygame.error as e:
-        # Fallback si la imagen no se encuentra (cuadro rojo sólido)
         print(f"Error cargando fondo de carga: {e}. Usando fallback.")
-        # La imagen de fallback también debe usar SRCALPHA si quieres transparencia
         imagen_modal = pygame.Surface((MODAL_WIDTH, MODAL_HEIGHT), pygame.SRCALPHA); 
-        imagen_modal.fill((255, 0, 0, 0)) # Rojo totalmente transparente (A=0)
+        imagen_modal.fill((255, 0, 0, 150)) 
         
     
     # Calculamos la posición de la imagen para centrarla
@@ -47,6 +42,11 @@ def run_loading_screen(ventana):
     start_time = time.time()
     running = True
     
+    # Crea una superficie oscura para el fondo
+    # 💡 CORRECCIÓN: Se establece una opacidad visible (180) para oscurecer el nivel
+    fondo_oscuro = pygame.Surface((ANCHO, ALTO), pygame.SRCALPHA)
+    fondo_oscuro.fill((0, 0, 0, 0)) # Negro con 180/255 de opacidad
+
     while running:
         elapsed_time = time.time() - start_time
         mouse_clicked = False
@@ -67,10 +67,10 @@ def run_loading_screen(ventana):
              running = False
             
         # --- Dibujo del Modal ---
-        #IMPORTANTE: NO usamos ventana.fill(). El fondo (el nivel 1) se mantiene visible.
+        # 1. Dibuja el oscurecimiento sobre el nivel que ya está en la ventana
+        ventana.blit(fondo_oscuro, (0, 0))
         
-        # Dibuja la imagen modal en la posición central
-        # Si la imagen modal tiene transparencia (convert_alpha), el fondo del nivel se verá.
+        # 2. Dibuja la imagen modal en la posición central
         ventana.blit(imagen_modal, MODAL_POS)
 
         pygame.display.flip()
