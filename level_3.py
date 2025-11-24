@@ -9,8 +9,9 @@ from pantalla_derrota import run_pantalla_derrota
 from coleccionable import Coleccionable 
 import sys
 import time 
-import loading_screen # 💡 Se asume que este archivo apunta al código de carga del Nivel 3.
+import loading_screen 
 from audio_manager import audio_manager 
+import cortina # 💡 IMPORTACIÓN DE LA CORTINA
 
 # --- CONSTANTES ---
 PATH_FONDO_NIVEL_1 = "recursos/FondoNivel3.png" 
@@ -21,7 +22,7 @@ TIEMPO_PENALIZACION = 2
 TIEMPO_BONIFICACION = 0 
 COLECCIONABLES_BUENOS_INDICES = [12, 13, 14, 15] 
 
-# --- CONSTANTES DE PAUSA y UI (Sin cambios) ---
+# --- CONSTANTES DE PAUSA y UI (sin cambios) ---
 PATH_BTN_PAUSA = "recursos/btn_pausa.png"
 PATH_BTN_PLAY = "recursos/btn_play.png"
 PATH_BTN_MENU_PAUSA = "recursos/btn_menu.png"
@@ -36,7 +37,7 @@ AMARILLO = (255, 255, 0)
 GRIS_OSCURO_PAUSA = (0,0,0,0) 
 
 
-# --- CLASE BOTON SIMPLE (Sin cambios) ---
+# --- CLASE BOTON SIMPLE (sin cambios) ---
 class BotonSimple:
     def __init__(self, x, y, width, height, path, action):
         self.action = action
@@ -59,74 +60,29 @@ class BotonSimple:
             return self.action
         return None
 
-# --- FUNCIÓN PARA CONFIGURAR EL NIVEL (Sin cambios) ---
+# --- FUNCIÓN PARA CONFIGURAR EL NIVEL (sin cambios) ---
 def setup_level(player):
     obstaculo_list = pygame.sprite.Group()
     meta_group = pygame.sprite.Group() 
     coleccionable_group = pygame.sprite.Group() 
     
-    # DEFINICIÓN DE OBSTÁCULOS (Omisión de coordenadas por brevedad, no hay cambios aquí)
+    # DEFINICIÓN DE OBSTÁCULOS
     obstaculos_coords = [
-         (132, 136, 1016, 8),
-        (136, 212, 8, 468),
-        (136, 212, 128, 8),
-        (256, 212, 8, 29),
-        (220, 316, 8, 136),
-        (220, 444, 40, 8),
-        (252, 444, 8, 160),
-        (252, 520, 52, 8),
-        (136, 520, 52, 8),
-        (220, 368, 40, 8),
-        (136, 596, 124, 8),
-        (136, 672, 1012, 8),
-        (1140, 136, 8, 456),
-        (1108, 584, 41, 8),
-        (348, 136, 8, 164),
-        (348, 292, 48, 8),
-        (580, 136, 8, 88),
-        (464, 216, 124, 8),
-        (492, 216, 12, 236),
-        (356, 384, 8, 68),
-        (356, 444, 176, 8),
-        (432, 444, 8, 44),
-        (844, 136, 8, 60),
-        (844, 188, 40, 8),
-        (964, 136, 8, 92),
-        (964, 220, 88, 8),
-        (1000, 220, 12, 81),
-        (980, 292, 32, 8),
-        (1104, 292, 44, 8),
-        (1104, 292, 8, 84),
-        (1056, 368, 57, 8),
-        (1056, 368, 8, 84),
-        (960, 444, 104, 8),
-        (1000, 544, 12, 140),
-        (980, 544, 32, 8),
-        (536, 560, 8, 125),
-        (340, 600, 8, 84),
-        (340, 600, 112, 8),   
-        (372, 564, 8, 44),
-        (708, 516, 12, 168),
-        (708, 604, 88, 8),
-        (788, 444, 8, 168),
-        (788, 520, 92, 8),
-        (872, 520, 8, 72),
-        (872, 580, 40, 12),
-        (744, 444, 52, 8),
-        (744, 372, 8, 80),
-        (744, 372, 41, 8),
-        (776, 292, 8, 88),
-        (776, 292, 92, 8),
-        (860, 292, 8, 120),
-        (816, 364, 52, 8),
-        (608, 516, 108, 8),
-        (620, 596, 36, 8),
-        (644, 368, 12, 236),
-        (584, 368, 72, 12),
-        (584, 292, 8, 88),
-        (584, 292, 92, 8),
-        (664, 216, 12, 84),
-        (664, 216, 60, 8),
+         (132, 136, 1016, 8), (136, 212, 8, 468), (136, 212, 128, 8), (256, 212, 8, 29),
+        (220, 316, 8, 136), (220, 444, 40, 8), (252, 444, 8, 160), (252, 520, 52, 8),
+        (136, 520, 52, 8), (220, 368, 40, 8), (136, 596, 124, 8), (136, 672, 1012, 8),
+        (1140, 136, 8, 456), (1108, 584, 41, 8), (348, 136, 8, 164), (348, 292, 48, 8),
+        (580, 136, 8, 88), (464, 216, 124, 8), (492, 216, 12, 236), (356, 384, 8, 68),
+        (356, 444, 176, 8), (432, 444, 8, 44), (844, 136, 8, 60), (844, 188, 40, 8),
+        (964, 136, 8, 92), (964, 220, 88, 8), (1000, 220, 12, 81), (980, 292, 32, 8),
+        (1104, 292, 44, 8), (1104, 292, 8, 84), (1056, 368, 57, 8), (1056, 368, 8, 84),
+        (960, 444, 104, 8), (1000, 544, 12, 140), (980, 544, 32, 8), (536, 560, 8, 125),
+        (340, 600, 8, 84), (340, 600, 112, 8), (372, 564, 8, 44), (708, 516, 12, 168),
+        (708, 604, 88, 8), (788, 444, 8, 168), (788, 520, 92, 8), (872, 520, 8, 72),
+        (872, 580, 40, 12), (744, 444, 52, 8), (744, 372, 8, 80), (744, 372, 41, 8),
+        (776, 292, 8, 88), (776, 292, 92, 8), (860, 292, 8, 120), (816, 364, 52, 8),
+        (608, 516, 108, 8), (620, 596, 36, 8), (644, 368, 12, 236), (584, 368, 72, 12),
+        (584, 292, 8, 88), (584, 292, 92, 8), (664, 216, 12, 84), (664, 216, 60, 8),
         (0, 48, 1280, 8)
     ]
     
@@ -138,27 +94,12 @@ def setup_level(player):
     meta = Meta(1137, 591, 10, 85)
     meta_group.add(meta)
     
-    # COLECCIONABLES (Omisión de coordenadas por brevedad, no hay cambios aquí)
+    # COLECCIONABLES
     coleccionables_coords = [
-        (302, 166, 15), #1
-        (364, 322, 13), #2
-        (416, 544, 12), #3
-        (612, 242, 12), #4
-        (588, 428, 14), #5
-        (782, 154, 14), #6
-        (942, 242, 13), #7
-        (894, 460, 12), #8
-        (1088, 520, 15), #9
-        # Malos
-        (170, 242, 18), #1
-        (216, 388, 16), #2
-        (240, 618, 17), #3
-        (510, 156, 16), #4
-        (570, 576, 18), #5
-        (774, 364, 18), #6
-        (814, 618, 16), #7
-        (950, 576, 17), #8
-        (1086, 170, 17), #9
+        (302, 166, 15), (364, 322, 13), (416, 544, 12), (612, 242, 12), (588, 428, 14), 
+        (782, 154, 14), (942, 242, 13), (894, 460, 12), (1088, 520, 15), 
+        (170, 242, 18), (216, 388, 16), (240, 618, 17), (510, 156, 16), (570, 576, 18), 
+        (774, 364, 18), (814, 618, 16), (950, 576, 17), (1086, 170, 17), 
     ]
 
     for x, y, index in coleccionables_coords:
@@ -167,7 +108,7 @@ def setup_level(player):
     return obstaculo_list, meta_group, coleccionable_group 
 
 
-# --- FUNCIÓN DE PRECÁRGALA (Sin cambios) ---
+# --- FUNCIÓN DE PRECÁRGALA (sin cambios) ---
 def preload_level(ventana, character_data):
     ANCHO = ventana.get_width()
     ALTO = ventana.get_height()
@@ -188,10 +129,10 @@ def preload_level(ventana, character_data):
     return fondo_nivel, player_group, obstaculo_group, meta_group, coleccionable_group
 
 
-# --- FUNCIÓN DE DIBUJO DE UI (Sin cambios) ---
+# --- FUNCIÓN DE DIBUJO DE UI (sin cambios) ---
 def draw_ui(ventana, remaining_time, max_time, collected, required):
     ANCHO, ALTO = ventana.get_size()
-    # ... (Lógica de dibujo de UI sin cambios) ...
+    
     BAR_WIDTH = 300
     BAR_HEIGHT = 20
     BAR_X = 20
@@ -221,20 +162,19 @@ def draw_ui(ventana, remaining_time, max_time, collected, required):
     ventana.blit(item_surface, (BAR_X, BAR_Y + BAR_HEIGHT + 10))
 
 # --------------------------------------------------------------------------
-# FUNCIÓN DEL MENÚ DE PAUSA (Sin cambios)
+# FUNCIÓN DEL MENÚ DE PAUSA (sin cambios)
 # --------------------------------------------------------------------------
 def run_pause_menu(ventana):
     ANCHO, ALTO = ventana.get_size()
     
     fondo_oscuro = pygame.Surface((ANCHO, ALTO), pygame.SRCALPHA)
-    # 💡 Se corrige la opacidad aquí si GRIS_OSCURO_PAUSA es (0,0,0,0), aunque el resto del código parece manejar la opacidad.
-    fondo_oscuro.fill((0, 0, 0, 0)) # Se asume una opacidad de 180 para oscurecer el fondo.
+    fondo_oscuro.fill((0, 0, 0, 0)) # Opacidad para oscurecer el fondo
     
     PANEL_W, PANEL_H = 500, 250 
     CENTER_X = ANCHO // 2
     PANEL_X = CENTER_X - PANEL_W // 2
     PANEL_Y = ALTO // 2 - PANEL_H // 2
-    # ... (Lógica de botones y bucle sin cambios) ...
+    
     fondo_pausa_img = None
     try:
         fondo_pausa_img_orig = pygame.image.load(PATH_FONDO_PAUSA).convert_alpha()
@@ -279,7 +219,7 @@ def run_pause_menu(ventana):
         pygame.time.Clock().tick(30) 
 
 
-# --- FUNCIÓN PRINCIPAL DEL NIVEL 3 (CORREGIDA) ---
+# --- FUNCIÓN PRINCIPAL DEL NIVEL 3 (MODIFICADA) ---
 def run_level(ventana, precargados, img_btn_regresar, REGRESAR_RECT):
     
     fondo_nivel, player_group, obstaculo_group, meta_group, coleccionable_group = precargados
@@ -297,21 +237,18 @@ def run_level(ventana, precargados, img_btn_regresar, REGRESAR_RECT):
     penalizacion_total = 0 
 
     # --------------------------------------------------------------------------------
-    # 🚨 PASO DE CARGA CORREGIDO: DIBUJAR NIVEL Y LLAMAR A LA PANTALLA DE CARGA
+    # PASO DE CARGA INICIAL
     # --------------------------------------------------------------------------------
     
-    # 1. Dibuja el nivel completo para que se vea detrás del modal de carga.
     ventana.blit(fondo_nivel, (0, 0)) 
     player_group.draw(ventana)
     obstaculo_group.draw(ventana) 
     coleccionable_group.draw(ventana) 
     meta_group.draw(ventana)
-    pygame.display.flip() # Asegura que se actualice la ventana
+    pygame.display.flip() 
     
-    # 2. Llama a la pantalla de carga.
     loading_screen.run_loading_screen(ventana) 
     
-    # Reinicia el tiempo de inicio para que el contador sea preciso después de la carga
     start_time = time.time() 
     # --------------------------------------------------------------------------------
     
@@ -323,7 +260,7 @@ def run_level(ventana, precargados, img_btn_regresar, REGRESAR_RECT):
         elapsed_time = time.time() - start_time + penalizacion_total
         remaining_time = max(0, TIEMPO_LIMITE_SEGUNDOS - elapsed_time)
         
-        # 1. MANEJO DE EVENTOS
+        # 1. MANEJO DE EVENTOS (sin cambios)
         for event in pygame.event.get(): 
             if event.type == pygame.QUIT:
                 pygame.quit(); sys.exit()
@@ -337,7 +274,7 @@ def run_level(ventana, precargados, img_btn_regresar, REGRESAR_RECT):
                     is_paused = True
                     pause_start_time = time.time()
 
-        # 2. LÓGICA DE PAUSA
+        # 2. LÓGICA DE PAUSA (sin cambios)
         if is_paused:
             audio_manager.pause_music()
             
@@ -352,7 +289,6 @@ def run_level(ventana, precargados, img_btn_regresar, REGRESAR_RECT):
             
             accion_pausa = run_pause_menu(ventana) 
 
-            # Lógica post-menú
             if accion_pausa == "CONTINUE":
                 is_paused = False
                 pause_duration = time.time() - pause_start_time
@@ -373,18 +309,22 @@ def run_level(ventana, precargados, img_btn_regresar, REGRESAR_RECT):
         if remaining_time <= 0:
             running = False
             audio_manager.stop_music() 
+            
+            # 🚨 LLAMADA A LA ANIMACIÓN DE CORTINA
+            cortina.run_cortina_animation(ventana)
+            
             accion_derrota = run_pantalla_derrota(ventana)
             if accion_derrota[0] == "MENU": return "SELECTOR_NIVEL", None, None 
             return accion_derrota
         
-        # ACTUALIZAR Y COLISIONES
+        # ACTUALIZAR Y COLISIONES (sin cambios)
         player = player_group.sprites()[0] 
         player_group.update(obstaculo_group) 
         coleccionable_group.update(dt) 
         
         collected_items = pygame.sprite.spritecollide(player, coleccionable_group, True)
         
-        # LÓGICA CLAVE DE COLECCIONABLES
+        # LÓGICA CLAVE DE COLECCIONABLES (sin cambios)
         for item in collected_items:
             
             bonus_speed = item.get_effect_value()
@@ -406,6 +346,10 @@ def run_level(ventana, precargados, img_btn_regresar, REGRESAR_RECT):
         if pygame.sprite.spritecollide(player, meta_group, False):
             running = False 
             audio_manager.stop_music()
+            
+            # 🚨 LLAMADA A LA ANIMACIÓN DE CORTINA
+            cortina.run_cortina_animation(ventana)
+            
             if coleccionables_recogidos >= NUM_COLECCIONABLES_REQUERIDOS:
                 return run_pantalla_ganaste(ventana, img_btn_regresar, REGRESAR_RECT) 
             else:
@@ -413,7 +357,7 @@ def run_level(ventana, precargados, img_btn_regresar, REGRESAR_RECT):
                 if accion_derrota[0] == "MENU": return "SELECTOR_NIVEL", None, None 
                 return accion_derrota
                 
-        # 4. Dibujar
+        # 4. Dibujar (sin cambios)
         ventana.blit(fondo_nivel, (0, 0)) 
         player_group.draw(ventana)
         obstaculo_group.draw(ventana) 

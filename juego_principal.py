@@ -27,7 +27,7 @@ COLOR_FONDO_NEGRO = (0, 0, 0)
 # Paths de las imágenes (DEBEN existir)
 PATH_FONDO_MENU = "recursos/fondo_menu.png" 
 PATH_INICIAR = "recursos/boton_iniciar.png"
-PATH_SALIR = "recursos/boton_salir.png"
+PATH_SALIR = "recursos/botones/btn_X.png"
 PATH_AJUSTES = "recursos/boton_ajustes.png" 
 PATH_BTN_REGRESAR = "recursos/boton_regresar.png" 
 

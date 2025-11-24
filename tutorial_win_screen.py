@@ -2,7 +2,7 @@ import pygame
 import sys
 
 # --- CONSTANTES ---
-PATH_FONDO_TUTORIAL_WIN = "recursos/FondoTutorial.png" 
+PATH_FONDO_TUTORIAL_WIN = "recursos/fondo_victoria0.png" 
 PATH_BTN_LEVEL_1 = "recursos/btn_nivel_1.png" 
 PATH_BTN_MENU = "recursos/btn_menu.png"     
 PATH_IMAGEN_DECORATIVA = "recursos/sabes_jugar.png" # Asegúrate de tener esta imagen
@@ -106,9 +106,9 @@ def run_pantalla_tutorial_win(ventana, img_btn_regresar=None, REGRESAR_RECT=None
     )
     
     # mensaje
-    IMG_DECO_W, IMG_DECO_H = 836, 473 
-    IMG_DECO_X = 250 # Posición X
-    IMG_DECO_Y = 160 # Posición Y
+    IMG_DECO_W, IMG_DECO_H = 696, 394 
+    IMG_DECO_X = 300 # Posición X
+    IMG_DECO_Y = 100 # Posición Y
     
     imagen_decorativa = ImagenDecorativa(
         IMG_DECO_X,

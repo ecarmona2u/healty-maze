@@ -9,12 +9,13 @@ import sys
 import time 
 import loading_screen 
 from audio_manager import audio_manager 
+import cortina # 💡 NUEVA IMPORTACIÓN DE LA ANIMACIÓN DE CORTINA
 
 # --- CONSTANTES ---
 PATH_FONDO_NIVEL_1 = "recursos/FondoNivel1.jpg" 
 AZUL_FALLBACK = (50, 50, 150)
 NUM_COLECCIONABLES_REQUERIDOS = 6 
-TIEMPO_LIMITE_SEGUNDOS = 120
+TIEMPO_LIMITE_SEGUNDOS = 1
 TIEMPO_PENALIZACION = 2
 TIEMPO_BONIFICACION = 0 
 COLECCIONABLES_BUENOS_INDICES = [0, 1, 2] 
@@ -163,7 +164,7 @@ def run_pause_menu(ventana):
     ANCHO, ALTO = ventana.get_size()
     
     fondo_oscuro = pygame.Surface((ANCHO, ALTO), pygame.SRCALPHA)
-    fondo_oscuro.fill((0, 0, 0, 0)) 
+    fondo_oscuro.fill((0, 0, 0, 0)) # Opacidad corregida para el menú de pausa
     
     PANEL_W, PANEL_H = 500, 250 
     CENTER_X = ANCHO // 2
@@ -232,7 +233,7 @@ def run_level(ventana, precargados_assets, img_btn_regresar, REGRESAR_RECT):
     penalizacion_total = 0 
 
     # --------------------------------------------------------------------------------
-    # 🚨 PASO DE CARGA CORREGIDO: DIBUJAR NIVEL Y LLAMAR A LA PANTALLA DE CARGA
+    # PASO DE CARGA INICIAL
     # --------------------------------------------------------------------------------
     
     # 1. Dibuja el nivel completo para que se vea detrás del modal de carga.
@@ -241,12 +242,12 @@ def run_level(ventana, precargados_assets, img_btn_regresar, REGRESAR_RECT):
     obstaculo_group.draw(ventana) 
     coleccionable_group.draw(ventana) 
     meta_group.draw(ventana)
-    pygame.display.flip() # Asegura que se actualice la ventana
+    pygame.display.flip() 
     
     # 2. Llama a la pantalla de carga.
     loading_screen.run_loading_screen(ventana) 
     
-    # Reinicia el tiempo de inicio para que el contador sea preciso después de la carga
+    # Reinicia el tiempo de inicio
     start_time = time.time() 
     # --------------------------------------------------------------------------------
 
@@ -272,7 +273,7 @@ def run_level(ventana, precargados_assets, img_btn_regresar, REGRESAR_RECT):
                     is_paused = True
                     pause_start_time = time.time()
 
-        # 2. LÓGICA DE PAUSA
+        # 2. LÓGICA DE PAUSA (sin cambios)
         if is_paused:
             audio_manager.pause_music()
             
@@ -308,18 +309,22 @@ def run_level(ventana, precargados_assets, img_btn_regresar, REGRESAR_RECT):
         if remaining_time <= 0:
             running = False
             audio_manager.stop_music() 
+            
+            # 🚨 LLAMADA A LA ANIMACIÓN DE CORTINA (DERROTA POR TIEMPO)
+            cortina.run_cortina_animation(ventana)
+            
             accion_derrota = run_pantalla_derrota(ventana)
             if accion_derrota[0] == "MENU": return "SELECTOR_NIVEL", None, None 
             return accion_derrota
         
-        # ACTUALIZAR Y COLISIONES
+        # ACTUALIZAR Y COLISIONES (sin cambios)
         player = player_group.sprites()[0] 
         player_group.update(obstaculo_group) 
         coleccionable_group.update(dt) 
         
         collected_items = pygame.sprite.spritecollide(player, coleccionable_group, True)
         
-        # LÓGICA CLAVE DE COLECCIONABLES
+        # LÓGICA CLAVE DE COLECCIONABLES (sin cambios)
         for item in collected_items:
             
             bonus_speed = item.get_effect_value()
@@ -341,6 +346,10 @@ def run_level(ventana, precargados_assets, img_btn_regresar, REGRESAR_RECT):
         if pygame.sprite.spritecollide(player, meta_group, False):
             running = False 
             audio_manager.stop_music()
+            
+            # 🚨 LLAMADA A LA ANIMACIÓN DE CORTINA (VICTORIA O DERROTA POR META)
+            cortina.run_cortina_animation(ventana)
+
             if coleccionables_recogidos >= NUM_COLECCIONABLES_REQUERIDOS:
                 return run_pantalla_ganaste(ventana, img_btn_regresar, REGRESAR_RECT) 
             else:
@@ -348,7 +357,7 @@ def run_level(ventana, precargados_assets, img_btn_regresar, REGRESAR_RECT):
                 if accion_derrota[0] == "MENU": return "SELECTOR_NIVEL", None, None 
                 return accion_derrota
                 
-        # 4. Dibujar
+        # 4. Dibujar (sin cambios)
         ventana.blit(fondo_nivel, (0, 0)) 
         player_group.draw(ventana)
         obstaculo_group.draw(ventana) 
