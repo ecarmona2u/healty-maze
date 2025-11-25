@@ -1,4 +1,4 @@
-# level_3.py - FUNCIÓN PRINCIPAL CORREGIDA
+# level_3.py - FUNCIÓN PRINCIPAL CORREGIDA Y CLASE BOTON SIMPLE ACTUALIZADA
 
 import pygame
 from player import Player 
@@ -9,20 +9,20 @@ from pantalla_derrota import run_pantalla_derrota
 from coleccionable import Coleccionable 
 import sys
 import time 
-import loading_screen 
+import loading_screen3
 from audio_manager import audio_manager 
-import cortina # 💡 IMPORTACIÓN DE LA CORTINA
+import cortina 
 
 # --- CONSTANTES ---
 PATH_FONDO_NIVEL_1 = "recursos/FondoNivel3.png" 
 AZUL_FALLBACK = (50, 50, 150)
 NUM_COLECCIONABLES_REQUERIDOS = 9 
-TIEMPO_LIMITE_SEGUNDOS = 2
+TIEMPO_LIMITE_SEGUNDOS = 60
 TIEMPO_PENALIZACION = 2
 TIEMPO_BONIFICACION = 0 
 COLECCIONABLES_BUENOS_INDICES = [12, 13, 14, 15] 
 
-# --- CONSTANTES DE PAUSA y UI (sin cambios) ---
+# --- CONSTANTES DE PAUSA y UI ---
 PATH_BTN_PAUSA = "recursos/btn_pausa.png"
 PATH_BTN_PLAY = "recursos/btn_play.png"
 PATH_BTN_MENU_PAUSA = "recursos/btn_menu.png"
@@ -36,27 +36,57 @@ BLANCO = (255, 255, 255)
 AMARILLO = (255, 255, 0)
 GRIS_OSCURO_PAUSA = (0,0,0,0) 
 
+# Nueva constante para el efecto de escalado al pasar el ratón en los botones de UI (Copiado de Nivel 2)
+BUTTON_HOVER_GROWTH = 10 
 
-# --- CLASE BOTON SIMPLE (sin cambios) ---
+
+# --- CLASE BOTON SIMPLE (Actualizada para animación de hover sin marco - Copiado de Nivel 2) ---
 class BotonSimple:
     def __init__(self, x, y, width, height, path, action):
         self.action = action
-        try:
-            self.image_original = pygame.image.load(path).convert_alpha()
-            self.image = pygame.transform.scale(self.image_original, (width, height))
-        except pygame.error:
-            self.image = pygame.Surface((width, height)); self.image.fill((100, 100, 100))
+        self.width = width
+        self.height = height
         
-        self.rect = self.image.get_rect(topleft=(x, y))
+        # Calcular dimensiones de Hover
+        self.hover_width = width + BUTTON_HOVER_GROWTH
+        self.hover_height = height + BUTTON_HOVER_GROWTH
+        
+        try:
+            image_original = pygame.image.load(path).convert_alpha()
+            
+            # Estado Normal
+            self.image_normal = pygame.transform.scale(image_original, (width, height))
+            self.rect_normal = self.image_normal.get_rect(topleft=(x, y))
+            
+            # Estado Hover
+            self.image_hover = pygame.transform.scale(image_original, (self.hover_width, self.hover_height))
+            # Recalcular la posición para centrar el botón en hover
+            pos_hover_x = x - BUTTON_HOVER_GROWTH // 2
+            pos_hover_y = y - BUTTON_HOVER_GROWTH // 2
+            self.rect_hover = self.image_hover.get_rect(topleft=(pos_hover_x, pos_hover_y))
+            
+        except pygame.error:
+            # Fallback
+            self.image_normal = pygame.Surface((width, height)); self.image_normal.fill((100, 100, 100))
+            self.rect_normal = self.image_normal.get_rect(topleft=(x, y))
+            self.image_hover = self.image_normal # Usar la normal como hover en fallback
+            self.rect_hover = self.rect_normal
+        
+        # Se mantiene el rect para compatibilidad con llamadas externas
+        self.rect = self.rect_normal 
 
     def draw(self, surface):
-        surface.blit(self.image, self.rect)
         mouse_pos = pygame.mouse.get_pos()
-        if self.rect.collidepoint(mouse_pos):
-            pygame.draw.rect(surface, AMARILLO, self.rect, 3, 5)
+        if self.rect_normal.collidepoint(mouse_pos):
+            # Dibujar estado hover (imagen escalada, sin marco amarillo)
+            surface.blit(self.image_hover, self.rect_hover)
+        else:
+            # Dibujar estado normal
+            surface.blit(self.image_normal, self.rect_normal)
     
     def check_click(self, mouse_pos):
-        if self.rect.collidepoint(mouse_pos):
+        # Se comprueba la colisión contra el rect normal (huella original)
+        if self.rect_normal.collidepoint(mouse_pos):
             return self.action
         return None
 
@@ -162,13 +192,14 @@ def draw_ui(ventana, remaining_time, max_time, collected, required):
     ventana.blit(item_surface, (BAR_X, BAR_Y + BAR_HEIGHT + 10))
 
 # --------------------------------------------------------------------------
-# FUNCIÓN DEL MENÚ DE PAUSA (sin cambios)
+# FUNCIÓN DEL MENÚ DE PAUSA (Actualizada para usar la nueva clase BotonSimple)
 # --------------------------------------------------------------------------
 def run_pause_menu(ventana):
     ANCHO, ALTO = ventana.get_size()
     
     fondo_oscuro = pygame.Surface((ANCHO, ALTO), pygame.SRCALPHA)
-    fondo_oscuro.fill((0, 0, 0, 0)) # Opacidad para oscurecer el fondo
+    # Rellenar con opacidad (0, 0, 0, 150) para oscurecer el fondo del juego
+    fondo_oscuro.fill((0, 0, 0, 0)) 
     
     PANEL_W, PANEL_H = 500, 250 
     CENTER_X = ANCHO // 2
@@ -190,6 +221,7 @@ def run_pause_menu(ventana):
     START_X = CENTER_X - (TOTAL_MENU_WIDTH // 2) 
     BUTTON_Y = PANEL_Y + PANEL_H - BTN_H - 30 
 
+    # Botones (Usando la clase BotonSimple con hover)
     btn_menu = BotonSimple(START_X, BUTTON_Y, BTN_W, BTN_H, PATH_BTN_MENU_PAUSA, "SELECTOR_NIVEL")
     btn_restart = BotonSimple(START_X + BTN_W + GAP, BUTTON_Y, BTN_W, BTN_H, PATH_BTN_REINICIAR, "REINTENTAR")
     btn_play = BotonSimple(START_X + (BTN_W + GAP) * 2, BUTTON_Y, BTN_W, BTN_H, PATH_BTN_PLAY, "CONTINUE")
@@ -209,7 +241,7 @@ def run_pause_menu(ventana):
             if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                 return "CONTINUE"
 
-        ventana.blit(fondo_oscuro, (0, 0))
+        ventana.blit(fondo_oscuro, (0, 0)) # Dibujar el oscurecimiento
         ventana.blit(fondo_pausa_img, (PANEL_X, PANEL_Y))
         
         for btn in botones:
@@ -227,6 +259,7 @@ def run_level(ventana, precargados, img_btn_regresar, REGRESAR_RECT):
     ANCHO = ventana.get_width()
     clock = pygame.time.Clock()
     
+    # Botón de Pausa (Usando la clase BotonSimple con hover)
     btn_pausa = BotonSimple(ANCHO - 60, 20, 40, 40, PATH_BTN_PAUSA, "PAUSE") 
     
     start_time = time.time() 
@@ -247,7 +280,7 @@ def run_level(ventana, precargados, img_btn_regresar, REGRESAR_RECT):
     meta_group.draw(ventana)
     pygame.display.flip() 
     
-    loading_screen.run_loading_screen(ventana) 
+    loading_screen3.run_loading_screen(ventana) 
     
     start_time = time.time() 
     # --------------------------------------------------------------------------------
@@ -260,7 +293,7 @@ def run_level(ventana, precargados, img_btn_regresar, REGRESAR_RECT):
         elapsed_time = time.time() - start_time + penalizacion_total
         remaining_time = max(0, TIEMPO_LIMITE_SEGUNDOS - elapsed_time)
         
-        # 1. MANEJO DE EVENTOS (sin cambios)
+        # 1. MANEJO DE EVENTOS
         for event in pygame.event.get(): 
             if event.type == pygame.QUIT:
                 pygame.quit(); sys.exit()
@@ -270,11 +303,12 @@ def run_level(ventana, precargados, img_btn_regresar, REGRESAR_RECT):
                 pause_start_time = time.time()
             if event.type == pygame.MOUSEBUTTONDOWN:
                 mouse_pos = pygame.mouse.get_pos()
+                # 💡 Uso del nuevo BotonSimple que comprueba la acción de pausa
                 if btn_pausa.check_click(mouse_pos) == "PAUSE" and not is_paused:
                     is_paused = True
                     pause_start_time = time.time()
 
-        # 2. LÓGICA DE PAUSA (sin cambios)
+        # 2. LÓGICA DE PAUSA
         if is_paused:
             audio_manager.pause_music()
             
@@ -284,7 +318,7 @@ def run_level(ventana, precargados, img_btn_regresar, REGRESAR_RECT):
             coleccionable_group.draw(ventana) 
             meta_group.draw(ventana)
             draw_ui(ventana, remaining_time, TIEMPO_LIMITE_SEGUNDOS, coleccionables_recogidos, NUM_COLECCIONABLES_REQUERIDOS)
-            btn_pausa.draw(ventana)
+            btn_pausa.draw(ventana) # 💡 Dibujar el botón para que se vea antes del menú
             pygame.display.flip()
             
             accion_pausa = run_pause_menu(ventana) 
@@ -310,21 +344,21 @@ def run_level(ventana, precargados, img_btn_regresar, REGRESAR_RECT):
             running = False
             audio_manager.stop_music() 
             
-            # 🚨 LLAMADA A LA ANIMACIÓN DE CORTINA
+            # LLAMADA A LA ANIMACIÓN DE CORTINA
             cortina.run_cortina_animation(ventana)
             
             accion_derrota = run_pantalla_derrota(ventana)
             if accion_derrota[0] == "MENU": return "SELECTOR_NIVEL", None, None 
             return accion_derrota
         
-        # ACTUALIZAR Y COLISIONES (sin cambios)
+        # ACTUALIZAR Y COLISIONES
         player = player_group.sprites()[0] 
         player_group.update(obstaculo_group) 
         coleccionable_group.update(dt) 
         
         collected_items = pygame.sprite.spritecollide(player, coleccionable_group, True)
         
-        # LÓGICA CLAVE DE COLECCIONABLES (sin cambios)
+        # LÓGICA CLAVE DE COLECCIONABLES
         for item in collected_items:
             
             bonus_speed = item.get_effect_value()
@@ -347,7 +381,7 @@ def run_level(ventana, precargados, img_btn_regresar, REGRESAR_RECT):
             running = False 
             audio_manager.stop_music()
             
-            # 🚨 LLAMADA A LA ANIMACIÓN DE CORTINA
+            # LLAMADA A LA ANIMACIÓN DE CORTINA
             cortina.run_cortina_animation(ventana)
             
             if coleccionables_recogidos >= NUM_COLECCIONABLES_REQUERIDOS:
@@ -357,7 +391,7 @@ def run_level(ventana, precargados, img_btn_regresar, REGRESAR_RECT):
                 if accion_derrota[0] == "MENU": return "SELECTOR_NIVEL", None, None 
                 return accion_derrota
                 
-        # 4. Dibujar (sin cambios)
+        # 4. Dibujar
         ventana.blit(fondo_nivel, (0, 0)) 
         player_group.draw(ventana)
         obstaculo_group.draw(ventana) 
@@ -365,7 +399,7 @@ def run_level(ventana, precargados, img_btn_regresar, REGRESAR_RECT):
         meta_group.draw(ventana)
 
         draw_ui(ventana, remaining_time, TIEMPO_LIMITE_SEGUNDOS, coleccionables_recogidos, NUM_COLECCIONABLES_REQUERIDOS)
-        btn_pausa.draw(ventana)
+        btn_pausa.draw(ventana) # 💡 Usando el nuevo BotonSimple
         pygame.display.flip()
 
     audio_manager.stop_music()

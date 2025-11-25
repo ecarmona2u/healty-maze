@@ -28,6 +28,7 @@ def run_loading_screen(ventana):
     """
     Muestra la imagen de fondo de carga escalada en un cuadro pequeño (modal) 
     en el centro de la ventana, y la imagen pequeña (x.png) en (150, 180).
+    Se ha añadido la lógica de animación (escalado en hover) al botón 'X'.
     """
     
     ANCHO = ventana.get_width()
@@ -48,45 +49,70 @@ def run_loading_screen(ventana):
     MODAL_Y = ALTO // 2 - MODAL_HEIGHT // 2
     MODAL_POS = (MODAL_X, MODAL_Y)
 
-    # --- 2. Cargar y Escalar la Imagen Pequeña (x.png) ---
+    # --- 2. Cargar y Preparar Imágenes del Botón 'X' ---
     try:
         small_img_original = pygame.image.load(PATH_SMALL_IMAGE).convert_alpha()
-        small_image = pygame.transform.scale(small_img_original, SMALL_IMAGE_SIZE)
     except pygame.error as e:
         print(f"Error cargando la imagen pequeña: {e}. Usando fallback para la imagen pequeña.")
-        # Fallback: un cuadrado animado
-        small_image = pygame.Surface(SMALL_IMAGE_SIZE, pygame.SRCALPHA);
-        pygame.draw.circle(small_image, (255, 255, 255), (SMALL_IMAGE_SIZE[0]//2, SMALL_IMAGE_SIZE[1]//2), 70) 
+        # Fallback: un cuadrado blanco
+        small_img_original = pygame.Surface(SMALL_IMAGE_SIZE, pygame.SRCALPHA);
+        small_img_original.fill((255, 255, 255)) 
 
-    # 3. Definir la posición fija de la imagen pequeña usando las constantes
-    SMALL_POS = (SMALL_X_POS, SMALL_Y_POS)
-        
+    # Tamaño normal (50x50)
+    original_size = SMALL_IMAGE_SIZE
+    small_image_normal = pygame.transform.scale(small_img_original, original_size)
+    
+    # Tamaño al pasar el ratón (+10 píxeles, 60x60)
+    hover_size = (original_size[0] + 10, original_size[1] + 10)
+    small_image_hover = pygame.transform.scale(small_img_original, hover_size)
+
+    # Rectángulo base (para detección de hover) en la posición fija
+    small_rect_base = small_image_normal.get_rect(topleft=(SMALL_X_POS, SMALL_Y_POS))
+    
     start_time = time.time()
     running = True
     
     # Crea una superficie oscura para el fondo del modal (el oscurecimiento)
-    # CORRECCIÓN: Usamos opacidad (180) para oscurecer el nivel de fondo
     fondo_oscuro = pygame.Surface((ANCHO, ALTO), pygame.SRCALPHA)
+    # Usamos un relleno negro semi-transparente
     fondo_oscuro.fill((0, 0, 0, 0)) 
 
     while running:
         elapsed_time = time.time() - start_time
         mouse_clicked = False
         
+        # --- Detección de Eventos ---
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit(); sys.exit()
             
-            # Detectar clic
             if event.type == pygame.MOUSEBUTTONDOWN:
                 mouse_clicked = True
+        
+        # --- Lógica de Hover y Escalado del Botón 'X' ---
+        mouse_pos = pygame.mouse.get_pos()
+        is_hovering = small_rect_base.collidepoint(mouse_pos)
+        
+        if is_hovering:
+            # Si el ratón está encima, usa la imagen más grande
+            current_image = small_image_hover
+            # Calcula la posición del nuevo rectángulo para que su CENTRO
+            # coincida con el centro del rectángulo base (para centrar la animación)
+            current_rect = current_image.get_rect(center=small_rect_base.center)
+        else:
+            # Si el ratón NO está encima, usa la imagen normal
+            current_image = small_image_normal
+            # Mantiene la posición del rectángulo base
+            current_rect = small_rect_base
 
         # --- Lógica de Salida ---
         # El tiempo mínimo debe cumplirse O debe haber pasado el tiempo mínimo y haber un clic
+        # También se cierra si se hace clic en el botón 'X'
         if elapsed_time >= MIN_DISPLAY_TIME:
             running = False
             
-        if mouse_clicked and elapsed_time >= 0.5:
+        # Si hay clic, salimos si ya pasó el tiempo de gracia (0.5s) O si el clic fue en el botón 'X'
+        if mouse_clicked and (elapsed_time >= 0.5 or current_rect.collidepoint(mouse_pos)):
              running = False
             
         # --- Dibujo del Modal ---
@@ -96,14 +122,9 @@ def run_loading_screen(ventana):
         # 2. Dibuja la imagen principal del modal en la posición central
         ventana.blit(imagen_modal, MODAL_POS)
 
-        # 3. Dibuja la imagen pequeña (x.png) en la posición fija (150, 180)
-        ventana.blit(small_image, SMALL_POS)
+        # 3. Dibuja la imagen pequeña (x.png) usando el tamaño y la posición calculada
+        ventana.blit(current_image, current_rect.topleft)
         
-        # 💡 Opcional: Rotar un poco la imagen pequeña para darle un efecto de carga
-        # small_image_rotated = pygame.transform.rotate(small_image, (elapsed_time * 100) % 360)
-        # rotated_rect = small_image_rotated.get_rect(center=(ANCHO // 2, ALTO // 2))
-        # ventana.blit(small_image_rotated, rotated_rect.topleft)
-
         pygame.display.flip()
         clock.tick(60)
         

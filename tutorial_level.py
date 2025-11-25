@@ -1,5 +1,3 @@
-# tutorial_level.py
-
 import pygame
 from player import Player 
 from obstaculo import Obstaculo 
@@ -31,26 +29,56 @@ BLANCO = (255, 255, 255)
 AMARILLO = (255, 255, 0)
 GRIS_OSCURO_PAUSA = (0,0,0,0) 
 
-# --- CLASE BOTON SIMPLE (Copia de seguridad) ---
+# Nueva constante para el efecto de escalado al pasar el ratón en los botones de UI
+BUTTON_HOVER_GROWTH = 10 
+
+# --- CLASE BOTON SIMPLE (Actualizada para animación de hover sin marco) ---
 class BotonSimple:
     def __init__(self, x, y, width, height, path, action):
         self.action = action
-        try:
-            self.image_original = pygame.image.load(path).convert_alpha()
-            self.image = pygame.transform.scale(self.image_original, (width, height))
-        except pygame.error:
-            self.image = pygame.Surface((width, height)); self.image.fill((100, 100, 100))
+        self.width = width
+        self.height = height
         
-        self.rect = self.image.get_rect(topleft=(x, y))
+        # Calcular dimensiones de Hover
+        self.hover_width = width + BUTTON_HOVER_GROWTH
+        self.hover_height = height + BUTTON_HOVER_GROWTH
+        
+        try:
+            image_original = pygame.image.load(path).convert_alpha()
+            
+            # Estado Normal
+            self.image_normal = pygame.transform.scale(image_original, (width, height))
+            self.rect_normal = self.image_normal.get_rect(topleft=(x, y))
+            
+            # Estado Hover
+            self.image_hover = pygame.transform.scale(image_original, (self.hover_width, self.hover_height))
+            # Recalcular la posición para centrar el botón en hover
+            pos_hover_x = x - BUTTON_HOVER_GROWTH // 2
+            pos_hover_y = y - BUTTON_HOVER_GROWTH // 2
+            self.rect_hover = self.image_hover.get_rect(topleft=(pos_hover_x, pos_hover_y))
+            
+        except pygame.error:
+            # Fallback
+            self.image_normal = pygame.Surface((width, height)); self.image_normal.fill((100, 100, 100))
+            self.rect_normal = self.image_normal.get_rect(topleft=(x, y))
+            self.image_hover = self.image_normal # Usar la normal como hover en fallback
+            self.rect_hover = self.rect_normal
+        
+        # Se mantiene el rect para compatibilidad con llamadas externas
+        self.rect = self.rect_normal 
 
     def draw(self, surface):
-        surface.blit(self.image, self.rect)
         mouse_pos = pygame.mouse.get_pos()
-        if self.rect.collidepoint(mouse_pos):
-            pygame.draw.rect(surface, AMARILLO, self.rect, 3, 5)
+        if self.rect_normal.collidepoint(mouse_pos):
+            # Dibujar estado hover (imagen escalada, sin marco amarillo)
+            surface.blit(self.image_hover, self.rect_hover)
+        else:
+            # Dibujar estado normal
+            surface.blit(self.image_normal, self.rect_normal)
     
     def check_click(self, mouse_pos):
-        if self.rect.collidepoint(mouse_pos):
+        # Se comprueba la colisión contra el rect normal (huella original)
+        if self.rect_normal.collidepoint(mouse_pos):
             return self.action
         return None
 
@@ -152,6 +180,7 @@ def run_pause_menu(ventana):
     START_X = CENTER_X - (TOTAL_MENU_WIDTH // 2) 
     BUTTON_Y = PANEL_Y + PANEL_H - BTN_H - 30 
 
+    # Se usan las nuevas instancias BotonSimple que gestionan el hover internamente
     btn_menu = BotonSimple(START_X, BUTTON_Y, BTN_W, BTN_H, PATH_BTN_MENU_PAUSA, "SELECTOR_NIVEL")
     btn_restart = BotonSimple(START_X + BTN_W + GAP, BUTTON_Y, BTN_W, BTN_H, PATH_BTN_REINICIAR, "REINTENTAR")
     btn_play = BotonSimple(START_X + (BTN_W + GAP) * 2, BUTTON_Y, BTN_W, BTN_H, PATH_BTN_PLAY, "CONTINUE")
@@ -189,6 +218,7 @@ def run_tutorial_level(ventana, precargados, img_btn_regresar, REGRESAR_RECT):
     ANCHO = ventana.get_width()
     clock = pygame.time.Clock()
     
+    # Se usa la nueva instancia BotonSimple que gestiona el hover
     btn_pausa = BotonSimple(ANCHO - 60, 20, 40, 40, PATH_BTN_PAUSA, "PAUSE")
     
     start_time = time.time() 

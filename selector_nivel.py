@@ -1,17 +1,16 @@
-# selector_nivel.py (CÓDIGO COMPLETO Y CORREGIDO para Nivel 2 y 3)
-
 import pygame
-import sys
-import nivel_en_proceso 
-import tutorial_level          
-import tutorial_win_screen     
-import loading_screen          
+import sys 
+import tutorial_level        
 
 # --- CONSTANTES ---
 # Nuevo tamaño por defecto (se usará si no se define uno individual)
 NIVEL_IMG_SIZE_DEFAULT = (250, 200) 
 COLOR_RESALTE = (255, 255, 0) 
 AZUL_FONDO = (20, 20, 50)
+
+# Constante para el efecto de escalado al pasar el ratón
+LEVEL_HOVER_GROWTH = 20 # 20px de crecimiento total
+
 BTN_REGRESAR_SIZE = (50, 50)
 PATH_BTN_REGRESAR = "recursos/boton_regresar.png" 
 COLOR_REGRESAR_FALLBACK = (200, 50, 50) 
@@ -22,13 +21,13 @@ NIVEL_PATHS = {
     'tutorial': {"path": "recursos/nivel_0_img.png", "pos_x": 502, "pos_y": 132, "width":273 , "height": 152}, 
     
     # Nivel 1: Tamaño grande (350x250)
-    'nivel_1': {"path": "recursos/nivel_1_img.png", "pos_x": 24, "pos_y": 386, "width": 297, "height": 204}, 
+    'nivel_1': {"path": "recursos/nivel_1_img.png", "pos_x": 24, "pos_y": 380, "width": 297, "height": 204}, 
     
     # Nivel 2: Tamaño pequeño (150x150)
-    'nivel_2': {"path": "recursos/nivel_2_img.png", "pos_x": 474, "pos_y": 308, "width": 377, "height": 282}, # <-- OK
+    'nivel_2': {"path": "recursos/nivel_2_img.png", "pos_x": 474, "pos_y": 298, "width": 377, "height": 282}, # <-- OK
     
     # Nivel 3: Usa el tamaño por defecto (250x200)
-    'nivel_3': {"path": "recursos/nivel_3_img.png", "pos_x": 943, "pos_y": 284, "width": 317, "height": 313}, # <-- OK
+    'nivel_3': {"path": "recursos/nivel_3_img.png", "pos_x": 943, "pos_y": 274, "width": 317, "height": 313}, # <-- OK
 }
 PATH_FONDO = "recursos/fondo_selector_nivel.png"
 
@@ -50,31 +49,64 @@ def run_selector_nivel(ventana, character_data):
     imagenes_niveles = {}
     botones_nivel = []
     
+    # 1. Carga y preparación de Botones de Nivel (con estados Normal y Hover)
     for id, data in NIVEL_PATHS.items():
-        # Obtiene el tamaño individual, si no existe usa el por defecto
+        # Obtiene el tamaño individual
         img_width = data.get("width", NIVEL_IMG_SIZE_DEFAULT[0])
         img_height = data.get("height", NIVEL_IMG_SIZE_DEFAULT[1])
         current_img_size = (img_width, img_height)
 
+        # Calcular tamaño y posición de Hover
+        size_hover = (img_width + LEVEL_HOVER_GROWTH, img_height + LEVEL_HOVER_GROWTH)
+        pos_normal = (data["pos_x"], data["pos_y"])
+        pos_hover = (pos_normal[0] - LEVEL_HOVER_GROWTH // 2, pos_normal[1] - LEVEL_HOVER_GROWTH // 2)
+
         try:
-            img = pygame.image.load(data["path"]).convert_alpha()
-            img_scaled = pygame.transform.scale(img, current_img_size)
+            img_base = pygame.image.load(data["path"]).convert_alpha()
+            
+            # Estado Normal
+            img_normal = pygame.transform.scale(img_base, current_img_size)
+            rect_normal = img_normal.get_rect(topleft=pos_normal)
+
+            # Estado Hover
+            img_hover = pygame.transform.scale(img_base, size_hover)
+            rect_hover = img_hover.get_rect(topleft=pos_hover)
+            
         except pygame.error:
-            img_scaled = pygame.Surface(current_img_size); img_scaled.fill((100, 100, 100))
+            # Fallback (usa el mismo surface para normal y hover, sin escalado)
+            img_normal = pygame.Surface(current_img_size); img_normal.fill((100, 100, 100))
+            rect_normal = img_normal.get_rect(topleft=pos_normal)
+            img_hover = img_normal 
+            rect_hover = rect_normal
         
-        rect = img_scaled.get_rect(topleft=(data["pos_x"], data["pos_y"])) 
+        botones_nivel.append({
+            'id': id, 
+            'normal_rect': rect_normal,
+            'hover_rect': rect_hover,
+            'normal_img': img_normal,
+            'hover_img': img_hover
+        })
         
-        imagenes_niveles[id] = img_scaled
-        botones_nivel.append({'id': id, 'rect': rect})
-        
-    REGRESAR_RECT = pygame.Rect(10, 10, BTN_REGRESAR_SIZE[0], BTN_REGRESAR_SIZE[1])
-    img_btn_regresar = pygame.Surface(BTN_REGRESAR_SIZE); img_btn_regresar.fill(COLOR_REGRESAR_FALLBACK)
+    # 2. Carga y preparación del Botón Regresar (con estados Normal y Hover)
+    BTN_REGRESAR_SIZE = (50, 50)
+    REGRESAR_RECT = pygame.Rect(10, 10, BTN_REGRESAR_SIZE[0], BTN_REGRESAR_SIZE[1]) # Rect normal para clic
+
+    # Calculamos el tamaño y posición del hover
+    BTN_REGRESAR_SIZE_HOVER = (BTN_REGRESAR_SIZE[0] + LEVEL_HOVER_GROWTH, BTN_REGRESAR_SIZE[1] + LEVEL_HOVER_GROWTH)
+    REGRESAR_POS_HOVER = (10 - LEVEL_HOVER_GROWTH // 2, 10 - LEVEL_HOVER_GROWTH // 2)
+    REGRESAR_RECT_HOVER = pygame.Rect(REGRESAR_POS_HOVER[0], REGRESAR_POS_HOVER[1], BTN_REGRESAR_SIZE_HOVER[0], BTN_REGRESAR_SIZE_HOVER[1])
     
     try:
-        temp_regresar = pygame.image.load(PATH_BTN_REGRESAR).convert_alpha()
-        img_btn_regresar = pygame.transform.scale(temp_regresar, BTN_REGRESAR_SIZE)
-    except pygame.error as e:
-        pass 
+        img_regresar_base = pygame.image.load(PATH_BTN_REGRESAR).convert_alpha()
+        img_btn_regresar_normal = pygame.transform.scale(img_regresar_base, BTN_REGRESAR_SIZE)
+        img_btn_regresar_hover = pygame.transform.scale(img_regresar_base, BTN_REGRESAR_SIZE_HOVER)
+    except pygame.error:
+        # Fallback
+        img_btn_regresar_normal = pygame.Surface(BTN_REGRESAR_SIZE); img_btn_regresar_normal.fill(COLOR_REGRESAR_FALLBACK)
+        img_btn_regresar_hover = pygame.Surface(BTN_REGRESAR_SIZE_HOVER); img_btn_regresar_hover.fill(COLOR_REGRESAR_FALLBACK)
+
+    # Variables para compatibilidad con la función run_tutorial_level
+    img_btn_regresar = img_btn_regresar_normal 
 
     # ----------------------------------------------------
     # --- BUCLE PRINCIPAL (Selección) ---
@@ -93,11 +125,13 @@ def run_selector_nivel(ventana, character_data):
                 return None
             
             if event.type == pygame.MOUSEBUTTONDOWN:
+                # Comprobación de clic en el botón Regresar (usando rect normal)
                 if REGRESAR_RECT.collidepoint(mouse_pos):
                     return None
                     
                 for boton in botones_nivel:
-                    if boton['rect'].collidepoint(mouse_pos):
+                    # Comprobación de clic en las miniaturas de nivel (usando rect normal)
+                    if boton['normal_rect'].collidepoint(mouse_pos):
                         nivel_id = boton['id']
                         
                         # Manejo del Tutorial
@@ -107,6 +141,7 @@ def run_selector_nivel(ventana, character_data):
                             while tutorial_activo:
                                 # Ya no hay loading screen
                                 precargados = tutorial_level.preload_tutorial_level(ventana, character_data)
+                                # Se pasan las variables de compatibilidad
                                 retorno, _, _ = tutorial_level.run_tutorial_level(ventana, precargados, img_btn_regresar, REGRESAR_RECT)
                                 
                                 if retorno == "SELECTOR_NIVEL":
@@ -129,12 +164,9 @@ def run_selector_nivel(ventana, character_data):
                                 break
                             
                         # Manejo de Nivel 1, 2 y 3 (Niveles reales)
-                        # Todos devuelven el ID para que juego_principal se encargue de la precarga
-                        elif nivel_id in ('nivel_1', 'nivel_2', 'nivel_3'): # <-- LÓGICA UNIFICADA
+                        elif nivel_id in ('nivel_1', 'nivel_2', 'nivel_3'):
                             nivel_seleccionado = nivel_id
                             seleccion_activa = False 
-                        
-                        # Si deseas bloquear niveles, usa un 'else:' aquí para llamar a nivel_en_proceso.
                         
                         break
                 
@@ -143,18 +175,25 @@ def run_selector_nivel(ventana, character_data):
         
         # --- DIBUJO ---
         ventana.blit(fondo_selector, (0, 0))
-        ventana.blit(img_btn_regresar, REGRESAR_RECT)
         
-        for boton in botones_nivel:
-            rect = boton['rect']
-            ventana.blit(imagenes_niveles[boton['id']], rect)
-            
-            if rect.collidepoint(mouse_pos):
-                pygame.draw.rect(ventana, COLOR_RESALTE, rect.inflate(10, 10), 5)
-        
+        # 1. Dibujar Botón Regresar (con Hover)
         if REGRESAR_RECT.collidepoint(mouse_pos):
-            pygame.draw.rect(ventana, COLOR_RESALTE, REGRESAR_RECT.inflate(10, 10), 3)
-
+            ventana.blit(img_btn_regresar_hover, REGRESAR_RECT_HOVER)
+        else:
+            ventana.blit(img_btn_regresar_normal, REGRESAR_RECT)
+        
+        # 2. Dibujar Niveles (con Hover)
+        for boton in botones_nivel:
+            
+            if boton['normal_rect'].collidepoint(mouse_pos):
+                # Estado Hover: dibujar imagen escalada
+                ventana.blit(boton['hover_img'], boton['hover_rect'])
+            else:
+                # Estado Normal: dibujar imagen normal
+                ventana.blit(boton['normal_img'], boton['normal_rect'])
+            
+            # ELIMINADO: Se quita el resaltado amarillo del mouse
+        
         pygame.display.flip()
         clock.tick(60)
         

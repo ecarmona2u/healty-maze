@@ -2,7 +2,8 @@ import pygame
 import sys
 
 # --- CONSTANTES DE RECURSOS ---
-PATH_FONDO = "recursos/fondo_victoria2.png"
+# Fondo para la victoria del Nivel 2
+PATH_FONDO = "recursos/fondo_victoria2.png" 
 PATH_BTN_NEXT = "recursos/btn_siguiente.png" 
 PATH_BTN_MENU = "recursos/btn_menu.png"     
 
@@ -10,49 +11,69 @@ BLANCO = (255, 255, 255)
 
 # --- VALORES DE RETORNO ---
 RETURN_NEXT_LEVEL = "NEXT_LEVEL"
-# 💡 RESTABLECEMOS a SELECTOR_NIVEL para el botón de menú
+# Usamos SELECTOR_NIVEL para el botón de menú
 RETURN_SELECTOR_NIVEL = "SELECTOR_NIVEL" 
 RETURN_REINTENTAR = "REINTENTAR" 
 
 
-# CLASE BOTON (Necesaria para pantallas de Ganar y Perder)
+# CLASE BOTON (Animada con escalado en hover)
 class Boton:
-    """Clase para crear botones con imagen y acción."""
+    """
+    Clase para crear botones con imagen y acción. Incluye efecto hover
+    de escalado (+10 píxeles) y detecta clics correctamente en el área del botón.
+    """
     def __init__(self, x, y, ancho, alto, texto, accion, path_imagen):
         
         self.accion = accion
+        self.original_size = (ancho, alto)
+        self.hover_size = (ancho + 10, alto + 10) # 10 píxeles más grande
         
-        # Carga de la imagen
+        # Carga y escalado de la imagen base
         try:
-            img_base = pygame.image.load(path_imagen).convert_alpha()
-            self.img_base = pygame.transform.scale(img_base, (ancho, alto))
-        except pygame.error:
+            img_original = pygame.image.load(path_imagen).convert_alpha()
+            # Almacenamos las dos versiones de la imagen para el hover
+            self.img_normal = pygame.transform.scale(img_original, self.original_size)
+            self.img_hover = pygame.transform.scale(img_original, self.hover_size)
+        except pygame.error as e:
+            print(f"Error cargando imagen de botón {path_imagen}: {e}. Usando fallback.")
             # Fallback a un color sólido si la imagen no se carga
-            self.img_base = pygame.Surface((ancho, alto))
-            self.img_base.fill((0, 150, 0)) # Verde para victoria
-
-        self.rect = self.img_base.get_rect(topleft=(x, y))
+            self.img_normal = pygame.Surface(self.original_size, pygame.SRCALPHA)
+            self.img_normal.fill((0, 150, 0, 180)) # Verde semi-transparente
+            self.img_hover = pygame.Surface(self.hover_size, pygame.SRCALPHA)
+            self.img_hover.fill((0, 200, 0, 255)) # Verde más brillante
+        
+        # Rectángulo base (usado para la detección de hover y posición original)
+        self.rect_normal = self.img_normal.get_rect(topleft=(x, y))
+        self.rect = self.rect_normal # Rectángulo actual
         
     def draw(self, surface):
-        action = False
+        action = None
         pos = pygame.mouse.get_pos()
         
-        # Comprobar colisión y clic
-        if self.rect.collidepoint(pos):
-            # Dibujar un borde o efecto de hover si es necesario
+        is_hovering = self.rect_normal.collidepoint(pos)
+
+        if is_hovering:
+            # 1. Aplicar efecto hover: usar imagen y rectángulo más grande
+            current_image = self.img_hover
+            # Recalcular el rectángulo para centrar la imagen grande sobre la posición normal
+            self.rect = current_image.get_rect(center=self.rect_normal.center)
+        else:
+            # 2. Estado normal: usar imagen y rectángulo normal
+            current_image = self.img_normal
+            self.rect = self.rect_normal
             
-            if pygame.mouse.get_pressed()[0] == 1:
-                action = True
+        # 3. Comprobar clic
+        # Solo detectamos el clic si el ratón está sobre el rectángulo actual (escalado o normal)
+        if self.rect.collidepoint(pos) and pygame.mouse.get_pressed()[0] == 1:
+            action = self.accion
 
-        surface.blit(self.img_base, self.rect) 
+        # 4. Dibujar la imagen (grande o normal, centrada)
+        surface.blit(current_image, self.rect) 
         
-        if action:
-            return self.accion
-
-        return None
+        return action
 
 
-# FUNCIÓN PRINCIPAL DE LA PANTALLA (run_pantalla_ganaste)
+# FUNCIÓN PRINCIPAL DE LA PANTALLA
 def run_pantalla_ganaste(ventana, img_btn_regresar=None, REGRESAR_RECT=None): 
     
     ANCHO, ALTO = ventana.get_size()
@@ -99,6 +120,7 @@ def run_pantalla_ganaste(ventana, img_btn_regresar=None, REGRESAR_RECT=None):
         ventana.blit(fondo, (0, 0))
 
         # Dibujo y Lógica
+        # La función draw ahora maneja la detección de hover y el escalado
         accion_siguiente = btn_siguiente.draw(ventana)
         accion_menu = btn_menu.draw(ventana)
         
