@@ -16,8 +16,10 @@ Un videojuego educativo, dirigido a niños de 3 a 12 años, que fomente hábitos
 Objetivos para "Healthy Maze" y nuestra ODS:
 El videojuego busca concientizar a niños de primaria sobre:
 * Identificar los hábitos saludables prioritarios a promover en la niñez (alimentación equilibrada, ejercicio físico, hidratación adecuada y sueño reparador).
- * Evaluar la usabilidad y el impacto educativo del prototipo mediante pruebas con un grupo de niños en edad escolar.
- * Generar un análisis de cómo la propuesta puede escalarse y mantenerse vigente en escenarios futuros hacia 2050.
+  
+* Evaluar la usabilidad y el impacto educativo del prototipo mediante pruebas con un grupo de niños en edad escolar.
+  
+* Generar un análisis de cómo la propuesta puede escalarse y mantenerse vigente en escenarios futuros hacia 2050.
 
 ## Preview
 
