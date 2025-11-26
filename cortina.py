@@ -31,7 +31,7 @@ FPS_ANIMACION = 10
 
 # --- GESTIÓN DE SONIDO INTERNA ---
 PATH_SFX_CORTINA = "recursos/audio/cortina.mp3"
-SFX_VOLUME = 0.3 # Volumen predeterminado para el SFX de la cortina
+SFX_VOLUME = 0.5 # Volumen predeterminado para el SFX de la cortina
 
 try:
     # Cargar el sonido de la cortina una sola vez al cargar el módulo
