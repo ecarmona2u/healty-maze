@@ -16,13 +16,36 @@ Un videojuego educativo, dirigido a niños de 3 a 12 años, que fomente hábitos
 Objetivos para "Healthy Maze" y nuestra ODS:
 El videojuego busca concientizar a niños de primaria sobre:
 * Identificar los hábitos saludables prioritarios a promover en la niñez (alimentación equilibrada, ejercicio físico, hidratación adecuada y sueño reparador).
-  
-* Evaluar la usabilidad y el impacto educativo del prototipo mediante pruebas con un grupo de niños en edad escolar.
-  
-* Generar un análisis de cómo la propuesta puede escalarse y mantenerse vigente en escenarios futuros hacia 2050.
+ * Evaluar la usabilidad y el impacto educativo del prototipo mediante pruebas con un grupo de niños en edad escolar.
+ * Generar un análisis de cómo la propuesta puede escalarse y mantenerse vigente en escenarios futuros hacia 2050.
 
-## Preview
+## Controles para jugar
 
-![Selección de personaje.](/recursos/readme/Personajes.png "Selección de personaje")
+|Acción|Tecla|
+|--|--|
+| Movimiento | WASD / Flechas |
+| Pausar | ESC |
 
-![Gameplay](/recursos/readme/gameplay.gif "Gameplay")
+## Multimedia
+![Menu principal.](/recursos/readme/menu.png "Menu principal")
+
+![Selección de personaje.](/recursos/readme/characters.png "Selección de personaje")
+
+![Selección de niveles.](/recursos/readme/lvls.png "Selección de nivel")
+
+| Nivel 1: Salón | Nivel 2: Cafetería | Nivel 3: Cancha |
+|:---:|:---:|:---:|
+| ![Gameplay Salón](/recursos/readme/lvl1.png) | ![Gameplay Cafetería](/recursos/readme/lvl2.png) | ![Gameplay Cancha](/recursos/readme/lvl3.png) |
+
+![Gameplay](/recursos/readme/gameplay.gif "Gameplay gif")
+
+
+## Autores
+
+- [Ernesto Carmona](https://www.github.com/ecarmona2)
+- [Zoé Rojas](https://github.com/xrojas1-star)
+- [Jesús Ibarra](https://github.com/jibarra18UDC)
+- [Carlos Arguellez](https://github.com/carguellez1)
+- [Mía Ibarra](https://github.com/MiaMIbarra)
+- [Itzel Hernández](https://github.com/zuzup-0)
+
