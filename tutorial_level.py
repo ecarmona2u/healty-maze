@@ -6,7 +6,8 @@ from tutorial_win_screen import run_pantalla_tutorial_win, RETURN_LEVEL_1, RETUR
 from coleccionable import Coleccionable 
 import sys
 import time 
-from audio_manager import audio_manager # Importación correcta del gestor de audio
+# Importación correcta del gestor de audio
+from audio_manager import audio_manager 
 
 # --- CONSTANTES DE NIVEL ESPECÍFICAS DEL TUTORIAL ---
 PATH_FONDO_TUTORIAL = "recursos/FondoTutorial.png" 
@@ -104,8 +105,8 @@ def setup_tutorial_level(player):
     meta_group.add(meta)
     
     coleccionables_coords = [
-        (576, 295, 0),  (894, 219, 2),  # Buenos
-        (725, 639, 3), # Malo
+        (576, 295, 0),  (894, 219, 2),  # Buenos (Índices 0, 1, 2)
+        (725, 639, 3), # Malo (Índices 3, 4, 5)
     ]
 
     for x, y, index in coleccionables_coords:
@@ -197,7 +198,7 @@ def run_pause_menu(ventana):
                     accion = btn.check_click(mouse_pos)
                     if accion:
                         return accion 
-            # 🚨 CORRECCIÓN CLAVE: ESC en el menú solo retorna "CONTINUE"
+            # ESC en el menú solo retorna "CONTINUE"
             if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                 return "CONTINUE"
 
@@ -228,6 +229,14 @@ def run_tutorial_level(ventana, precargados, img_btn_regresar, REGRESAR_RECT):
     coleccionables_recogidos = 0 
     penalizacion_total = 0 
 
+    # --------------------------------------------------------------------------------
+    # INICIO DE MÚSICA DE NIVEL DE TUTORIAL (Eliminada la Pantalla de Carga)
+    # --------------------------------------------------------------------------------
+    # El código de pantalla de carga fue eliminado por solicitud del usuario.
+    # Ahora la música se inicia inmediatamente antes del bucle principal.
+    audio_manager.play_music('tutorial') 
+    # --------------------------------------------------------------------------------
+
     running = True
     while running:
         
@@ -240,7 +249,7 @@ def run_tutorial_level(ventana, precargados, img_btn_regresar, REGRESAR_RECT):
         for event in pygame.event.get(): 
             if event.type == pygame.QUIT:
                 pygame.quit(); sys.exit()
-            # 🚨 CORRECCIÓN DE PAUSA: Solo pausa si NO está ya en pausa
+            # ESC para pausar
             if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE and not is_paused: 
                 is_paused = True
                 pause_start_time = time.time()
@@ -252,7 +261,7 @@ def run_tutorial_level(ventana, precargados, img_btn_regresar, REGRESAR_RECT):
 
         # 2. LÓGICA DE PAUSA (CON AUDIO)
         if is_paused:
-            audio_manager.pause_music() # PAUSA la música (corregido en audio_manager.py)
+            audio_manager.pause_music() # PAUSA la música
             
             # Dibujar estado congelado
             ventana.blit(fondo_nivel, (0, 0)) 
@@ -287,17 +296,23 @@ def run_tutorial_level(ventana, precargados, img_btn_regresar, REGRESAR_RECT):
         if remaining_time <= 0:
             running = False
             audio_manager.stop_music() 
-            return "SELECTOR_NIVEL", None, None
-        
+            return "SELECTOR_NIVEL", None, None # Derrota en tutorial lleva al selector
+
+        # ACTUALIZAR Y COLISIONES
         player = player_group.sprites()[0] 
         player_group.update(obstaculo_group) 
-        coleccionable_group.update(dt) # Actualización de animación
+        coleccionable_group.update(dt) 
 
         collected_items = pygame.sprite.spritecollide(player, coleccionable_group, True)
+        
+        # LÓGICA CLAVE DE COLECCIONABLES CON AUDIO
         for item in collected_items:
-            if hasattr(item, 'index') and item.index in [3, 4, 5]:
+            # Los índices 3, 4, 5 son los malos (penalizan tiempo)
+            if hasattr(item, 'index') and item.index in [3, 4, 5]: 
+                audio_manager.play_collect_bad() # Sonido de objeto malo
                 penalizacion_total += TIEMPO_PENALIZACION
             else:
+                audio_manager.play_collect_good() # Sonido de objeto bueno
                 coleccionables_recogidos += 1
             
         # CONDICIÓN DE META

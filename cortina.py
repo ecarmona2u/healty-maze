@@ -2,6 +2,7 @@
 
 import pygame
 import sys
+# from audio_manager import audio_manager # <-- Ya no se necesita el gestor de audio, manejamos el SFX aquí
 
 # Rutas de las imágenes de la cortina (asume que están en el directorio raíz o Pygame las encuentra)
 CORTINA_PATHS = [
@@ -23,12 +24,25 @@ CORTINA_PATHS = [
     "recursos/animaciones/cortina/cortina13.png",
     "recursos/animaciones/cortina/cortina14.png",
     "recursos/animaciones/cortina/cortina15.png",
-
-
 ]
 
 # Tasa de fotogramas de la animación (velocidad de la cortina)
 FPS_ANIMACION = 10 
+
+# --- GESTIÓN DE SONIDO INTERNA ---
+PATH_SFX_CORTINA = "recursos/audio/cortina.mp3"
+SFX_VOLUME = 0.3 # Volumen predeterminado para el SFX de la cortina
+
+try:
+    # Cargar el sonido de la cortina una sola vez al cargar el módulo
+    SFX_CORTINA_OBJ = pygame.mixer.Sound(PATH_SFX_CORTINA)
+    SFX_CORTINA_OBJ.set_volume(SFX_VOLUME)
+except pygame.error as e:
+    print(f"Error CRÍTICO al cargar SFX de cortina: {e}. El sonido no se reproducirá.")
+    # Fallback: objeto dummy para evitar errores de atributo si el archivo no existe
+    SFX_CORTINA_OBJ = type('DummySound', (object,), {'play': lambda: None})()
+# -----------------------------------
+
 
 def preload_cortina_frames(ANCHO, ALTO):
     """Carga y escala todos los frames de la animación de cortina."""
@@ -67,6 +81,9 @@ def run_cortina_animation(ventana):
     
     if num_frames == 0:
         return 
+    
+    # 💡 REPRODUCIR SONIDO DIRECTAMENTE DESDE EL OBJETO CARGADO EN ESTE MÓDULO
+    SFX_CORTINA_OBJ.play()
         
     running = True
     current_frame_index = 0
@@ -79,7 +96,6 @@ def run_cortina_animation(ventana):
                 pygame.quit(); sys.exit()
 
         # 1. Dibujar el frame actual de la cortina
-        # La cortina se superpone al estado final del nivel.
         ventana.blit(frames[current_frame_index], (0, 0))
         
         # 2. Avanzar al siguiente frame

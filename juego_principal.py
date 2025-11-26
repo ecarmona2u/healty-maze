@@ -260,7 +260,9 @@ while True:
         
     # 1. ESTADO: SELECCIÓN DE PERSONAJE
     elif estado_actual == 'seleccionar_personaje':
-        audio_manager.play_music('selector') 
+        # FIX: Cambiamos 'selector' por 'menu_principal' para evitar el reinicio de música
+        # ya que ambas pistas apuntan al mismo archivo MP3.
+        audio_manager.play_music('menu_principal') 
         personaje_data_result = selector_personaje.run_selector_personaje(surface) 
         
         if personaje_data_result:
@@ -272,7 +274,9 @@ while True:
 
     # 2. ESTADO: SELECCIÓN DE NIVEL
     elif estado_actual == 'seleccionar_nivel':
-        audio_manager.play_music('selector') 
+        # FIX: Cambiamos 'selector' por 'menu_principal' para evitar el reinicio de música
+        # ya que ambas pistas apuntan al mismo archivo MP3.
+        audio_manager.play_music('menu_principal') 
         nivel_id = selector_nivel.run_selector_nivel(surface, personaje_seleccionado) 
         
         if nivel_id:
