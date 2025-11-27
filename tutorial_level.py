@@ -1,5 +1,3 @@
-# tutorial_level.py
-
 import pygame
 from player import Player 
 from obstaculo import Obstaculo 
@@ -8,21 +6,26 @@ from tutorial_win_screen import run_pantalla_tutorial_win, RETURN_LEVEL_1, RETUR
 from coleccionable import Coleccionable 
 import sys
 import time 
-from audio_manager import audio_manager # Importación correcta del gestor de audio
+# Importación correcta del gestor de audio
+from audio_manager import audio_manager 
+# Lógica de traducción
+from traduccion import obtener_ruta_imagen_traducida, obtener_texto_traducido # <--- MODIFICADO
 
 # --- CONSTANTES DE NIVEL ESPECÍFICAS DEL TUTORIAL ---
-PATH_FONDO_TUTORIAL = "recursos/FondoTutorial.png" 
+# Usamos la RUTA BASE para permitir la traducción
+PATH_FONDO_TUTORIAL_BASE = "FondoTutorial.png" 
 AZUL_FALLBACK = (50, 50, 150)
 NUM_COLECCIONABLES_REQUERIDOS = 2 
-TIEMPO_LIMITE_SEGUNDOS = 30
+TIEMPO_LIMITE_SEGUNDOS = 60
 TIEMPO_PENALIZACION = 3 
 
 # --- CONSTANTES DE PAUSA (Completas y Corregidas) ---
-PATH_BTN_PAUSA = "recursos/btn_pausa.png"
-PATH_BTN_PLAY = "recursos/btn_play.png"
-PATH_BTN_MENU_PAUSA = "recursos/btn_menu.png"
-PATH_BTN_REINICIAR = "recursos/btn_reiniciar.png"
-PATH_FONDO_PAUSA = "recursos/fondo_menu_pausa.png" 
+PATH_BTN_PAUSA = "recursos/botones/btn_pausa.png"
+PATH_BTN_PLAY = "recursos/botones/btn_play.png"
+PATH_BTN_MENU_PAUSA = "recursos/botones/btn_menu.png"
+PATH_BTN_REINICIAR = "recursos/botones/btn_reiniciar.png"
+# Usamos la RUTA BASE para permitir la traducción
+PATH_FONDO_PAUSA_BASE = "fondo_menu_pausa.png" 
 # Colores UI
 VERDE_BARRA = (0, 200, 0)
 ROJO_BARRA = (200, 0, 0)
@@ -31,26 +34,56 @@ BLANCO = (255, 255, 255)
 AMARILLO = (255, 255, 0)
 GRIS_OSCURO_PAUSA = (0,0,0,0) 
 
-# --- CLASE BOTON SIMPLE (Copia de seguridad) ---
+# Nueva constante para el efecto de escalado al pasar el ratón en los botones de UI
+BUTTON_HOVER_GROWTH = 10 
+
+# --- CLASE BOTON SIMPLE (Actualizada para animación de hover sin marco) ---
 class BotonSimple:
     def __init__(self, x, y, width, height, path, action):
         self.action = action
-        try:
-            self.image_original = pygame.image.load(path).convert_alpha()
-            self.image = pygame.transform.scale(self.image_original, (width, height))
-        except pygame.error:
-            self.image = pygame.Surface((width, height)); self.image.fill((100, 100, 100))
+        self.width = width
+        self.height = height
         
-        self.rect = self.image.get_rect(topleft=(x, y))
+        # Calcular dimensiones de Hover
+        self.hover_width = width + BUTTON_HOVER_GROWTH
+        self.hover_height = height + BUTTON_HOVER_GROWTH
+        
+        try:
+            image_original = pygame.image.load(path).convert_alpha()
+            
+            # Estado Normal
+            self.image_normal = pygame.transform.scale(image_original, (width, height))
+            self.rect_normal = self.image_normal.get_rect(topleft=(x, y))
+            
+            # Estado Hover
+            self.image_hover = pygame.transform.scale(image_original, (self.hover_width, self.hover_height))
+            # Recalcular la posición para centrar el botón en hover
+            pos_hover_x = x - BUTTON_HOVER_GROWTH // 2
+            pos_hover_y = y - BUTTON_HOVER_GROWTH // 2
+            self.rect_hover = self.image_hover.get_rect(topleft=(pos_hover_x, pos_hover_y))
+            
+        except pygame.error:
+            # Fallback
+            self.image_normal = pygame.Surface((width, height)); self.image_normal.fill((100, 100, 100))
+            self.rect_normal = self.image_normal.get_rect(topleft=(x, y))
+            self.image_hover = self.image_normal # Usar la normal como hover en fallback
+            self.rect_hover = self.rect_normal
+        
+        # Se mantiene el rect para compatibilidad con llamadas externas
+        self.rect = self.rect_normal 
 
     def draw(self, surface):
-        surface.blit(self.image, self.rect)
         mouse_pos = pygame.mouse.get_pos()
-        if self.rect.collidepoint(mouse_pos):
-            pygame.draw.rect(surface, AMARILLO, self.rect, 3, 5)
+        if self.rect_normal.collidepoint(mouse_pos):
+            # Dibujar estado hover (imagen escalada, sin marco amarillo)
+            surface.blit(self.image_hover, self.rect_hover)
+        else:
+            # Dibujar estado normal
+            surface.blit(self.image_normal, self.rect_normal)
     
     def check_click(self, mouse_pos):
-        if self.rect.collidepoint(mouse_pos):
+        # Se comprueba la colisión contra el rect normal (huella original)
+        if self.rect_normal.collidepoint(mouse_pos):
             return self.action
         return None
 
@@ -76,8 +109,8 @@ def setup_tutorial_level(player):
     meta_group.add(meta)
     
     coleccionables_coords = [
-        (576, 295, 0),  (894, 219, 2),  # Buenos
-        (725, 639, 3), # Malo
+        (576, 295, 0),  (894, 190, 2),  # Buenos (Índices 0, 1, 2)
+        (725, 625, 3), # Malo (Índices 3, 4, 5)
     ]
 
     for x, y, index in coleccionables_coords:
@@ -85,13 +118,16 @@ def setup_tutorial_level(player):
         
     return obstaculo_list, meta_group, coleccionable_group 
 
-# --- FUNCIÓN DE PRECÁRGALA (sin cambios funcionales) ---
+# --- FUNCIÓN DE PRECÁRGALA (ACTUALIZADA PARA TRADUCCIÓN) ---
 def preload_tutorial_level(ventana, character_data):
     ANCHO = ventana.get_width()
     ALTO = ventana.get_height()
     
+    # 1. Obtener la ruta traducida para el fondo del nivel
+    path_fondo_traducido = obtener_ruta_imagen_traducida(PATH_FONDO_TUTORIAL_BASE)
+    
     try:
-        fondo_nivel = pygame.image.load(PATH_FONDO_TUTORIAL).convert()
+        fondo_nivel = pygame.image.load(path_fondo_traducido).convert() # <--- Uso de la ruta traducida
         fondo_nivel = pygame.transform.scale(fondo_nivel, (ANCHO, ALTO))
     except pygame.error as e:
         fondo_nivel = pygame.Surface((ANCHO, ALTO)); fondo_nivel.fill(AZUL_FALLBACK)
@@ -105,7 +141,7 @@ def preload_tutorial_level(ventana, character_data):
     return fondo_nivel, player_group, obstaculo_group, meta_group, coleccionable_group
 
 
-# --- FUNCIÓN DE DIBUJO DE UI (sin cambios) ---
+# --- FUNCIÓN DE DIBUJO DE UI (MODIFICADA PARA TRADUCCIÓN DE TEXTO) ---
 def draw_ui(ventana, remaining_time, max_time, collected, required):
     ANCHO, ALTO = ventana.get_size()
     
@@ -122,14 +158,18 @@ def draw_ui(ventana, remaining_time, max_time, collected, required):
     timer_surface = font_timer.render(time_text, True, BLANCO)
     ventana.blit(timer_surface, (BAR_X + BAR_WIDTH + 10, BAR_Y))
     
+    # --- Lógica de Traducción Aplicada Aquí ---
+    # Obtenemos la etiqueta de "Objetos" o "Objects" según el idioma
+    item_label = obtener_texto_traducido("ITEMS_COLLECTED") 
+    
     font_items = pygame.font.SysFont('Arial', 30, bold=True)
-    item_text = f"Objetos: {collected} / {required}"
+    item_text = f"{item_label}: {collected} / {required}" # Usa la etiqueta traducida
     item_color = AMARILLO if collected < required else VERDE_BARRA
     item_surface = font_items.render(item_text, True, item_color)
     
     ventana.blit(item_surface, (BAR_X, BAR_Y + BAR_HEIGHT + 10))
 
-# --- FUNCIÓN DEL MENÚ DE PAUSA ---
+# --- FUNCIÓN DEL MENÚ DE PAUSA (ACTUALIZADA PARA TRADUCCIÓN) ---
 def run_pause_menu(ventana):
     ANCHO, ALTO = ventana.get_size()
     fondo_oscuro = pygame.Surface((ANCHO, ALTO), pygame.SRCALPHA)
@@ -140,8 +180,11 @@ def run_pause_menu(ventana):
     
     COLOR_FIJO_PAUSA = (120, 120, 120) 
     
+    # 2. Obtener la ruta traducida para el fondo del menú de pausa
+    path_fondo_pausa_traducido = obtener_ruta_imagen_traducida(PATH_FONDO_PAUSA_BASE)
+    
     try:
-        fondo_pausa_img_orig = pygame.image.load(PATH_FONDO_PAUSA).convert_alpha()
+        fondo_pausa_img_orig = pygame.image.load(path_fondo_pausa_traducido).convert_alpha() # <--- Uso de la ruta traducida
         fondo_pausa_img = pygame.transform.scale(fondo_pausa_img_orig, (PANEL_W, PANEL_H))
     except pygame.error:
         fondo_pausa_img = pygame.Surface((PANEL_W, PANEL_H)); fondo_pausa_img.fill(COLOR_FIJO_PAUSA)
@@ -152,6 +195,7 @@ def run_pause_menu(ventana):
     START_X = CENTER_X - (TOTAL_MENU_WIDTH // 2) 
     BUTTON_Y = PANEL_Y + PANEL_H - BTN_H - 30 
 
+    # Se usan las nuevas instancias BotonSimple que gestionan el hover internamente
     btn_menu = BotonSimple(START_X, BUTTON_Y, BTN_W, BTN_H, PATH_BTN_MENU_PAUSA, "SELECTOR_NIVEL")
     btn_restart = BotonSimple(START_X + BTN_W + GAP, BUTTON_Y, BTN_W, BTN_H, PATH_BTN_REINICIAR, "REINTENTAR")
     btn_play = BotonSimple(START_X + (BTN_W + GAP) * 2, BUTTON_Y, BTN_W, BTN_H, PATH_BTN_PLAY, "CONTINUE")
@@ -168,7 +212,7 @@ def run_pause_menu(ventana):
                     accion = btn.check_click(mouse_pos)
                     if accion:
                         return accion 
-            # 🚨 CORRECCIÓN CLAVE: ESC en el menú solo retorna "CONTINUE"
+            # ESC en el menú solo retorna "CONTINUE"
             if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                 return "CONTINUE"
 
@@ -189,6 +233,7 @@ def run_tutorial_level(ventana, precargados, img_btn_regresar, REGRESAR_RECT):
     ANCHO = ventana.get_width()
     clock = pygame.time.Clock()
     
+    # Se usa la nueva instancia BotonSimple que gestiona el hover
     btn_pausa = BotonSimple(ANCHO - 60, 20, 40, 40, PATH_BTN_PAUSA, "PAUSE")
     
     start_time = time.time() 
@@ -197,6 +242,14 @@ def run_tutorial_level(ventana, precargados, img_btn_regresar, REGRESAR_RECT):
 
     coleccionables_recogidos = 0 
     penalizacion_total = 0 
+
+    # --------------------------------------------------------------------------------
+    # INICIO DE MÚSICA DE NIVEL DE TUTORIAL (Eliminada la Pantalla de Carga)
+    # --------------------------------------------------------------------------------
+    # El código de pantalla de carga fue eliminado por solicitud del usuario.
+    # Ahora la música se inicia inmediatamente antes del bucle principal.
+    audio_manager.play_music('tutorial') 
+    # --------------------------------------------------------------------------------
 
     running = True
     while running:
@@ -210,7 +263,7 @@ def run_tutorial_level(ventana, precargados, img_btn_regresar, REGRESAR_RECT):
         for event in pygame.event.get(): 
             if event.type == pygame.QUIT:
                 pygame.quit(); sys.exit()
-            # 🚨 CORRECCIÓN DE PAUSA: Solo pausa si NO está ya en pausa
+            # ESC para pausar
             if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE and not is_paused: 
                 is_paused = True
                 pause_start_time = time.time()
@@ -222,7 +275,7 @@ def run_tutorial_level(ventana, precargados, img_btn_regresar, REGRESAR_RECT):
 
         # 2. LÓGICA DE PAUSA (CON AUDIO)
         if is_paused:
-            audio_manager.pause_music() # PAUSA la música (corregido en audio_manager.py)
+            audio_manager.pause_music() # PAUSA la música
             
             # Dibujar estado congelado
             ventana.blit(fondo_nivel, (0, 0)) 
@@ -253,21 +306,30 @@ def run_tutorial_level(ventana, precargados, img_btn_regresar, REGRESAR_RECT):
 
         # 3. LÓGICA DEL JUEGO 
         
-        # CONDICIÓN DE DERROTA POR TIEMPO
+        # CONDICIÓN DE TIEMPO
         if remaining_time <= 0:
-            running = False
-            audio_manager.stop_music() 
-            return "SELECTOR_NIVEL", None, None
-        
+            # 🚨 MODIFICACIÓN SOLICITADA: Reiniciar el tiempo en lugar de salir
+            print("Tiempo agotado. Reiniciando contador de tiempo.")
+            audio_manager.play_collect_bad() # Sonido para indicar el reinicio/penalización
+            start_time = time.time()         # Reinicia el tiempo de inicio (para que el nuevo remaining_time sea ~TIEMPO_LIMITE_SEGUNDOS)
+            penalizacion_total = 0           # Reinicia la penalización acumulada
+            # El bucle continúa, el juego NO se detiene
+            
+        # ACTUALIZAR Y COLISIONES
         player = player_group.sprites()[0] 
         player_group.update(obstaculo_group) 
-        coleccionable_group.update(dt) # Actualización de animación
+        coleccionable_group.update(dt) 
 
         collected_items = pygame.sprite.spritecollide(player, coleccionable_group, True)
+        
+        # LÓGICA CLAVE DE COLECCIONABLES CON AUDIO
         for item in collected_items:
-            if hasattr(item, 'index') and item.index in [3, 4, 5]:
+            # Los índices 3, 4, 5 son los malos (penalizan tiempo)
+            if hasattr(item, 'index') and item.index in [3, 4, 5]: 
+                audio_manager.play_collect_bad() # Sonido de objeto malo
                 penalizacion_total += TIEMPO_PENALIZACION
             else:
+                audio_manager.play_collect_good() # Sonido de objeto bueno
                 coleccionables_recogidos += 1
             
         # CONDICIÓN DE META
@@ -275,8 +337,10 @@ def run_tutorial_level(ventana, precargados, img_btn_regresar, REGRESAR_RECT):
             running = False 
             audio_manager.stop_music()
             if coleccionables_recogidos >= NUM_COLECCIONABLES_REQUERIDOS:
+                # Éxito: va a la pantalla de victoria del tutorial
                 return run_pantalla_tutorial_win(ventana, img_btn_regresar, REGRESAR_RECT) 
             else:
+                # Fracaso: sale al selector de nivel (porque no cumplió el objetivo de coleccionables)
                 return "SELECTOR_NIVEL", None, None
                 
         # 4. Dibujar
