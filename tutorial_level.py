@@ -9,7 +9,7 @@ import time
 # Importación correcta del gestor de audio
 from audio_manager import audio_manager 
 # Lógica de traducción
-from traduccion import obtener_ruta_imagen_traducida # <--- AÑADIDO
+from traduccion import obtener_ruta_imagen_traducida, obtener_texto_traducido # <--- MODIFICADO
 
 # --- CONSTANTES DE NIVEL ESPECÍFICAS DEL TUTORIAL ---
 # Usamos la RUTA BASE para permitir la traducción
@@ -141,7 +141,7 @@ def preload_tutorial_level(ventana, character_data):
     return fondo_nivel, player_group, obstaculo_group, meta_group, coleccionable_group
 
 
-# --- FUNCIÓN DE DIBUJO DE UI (sin cambios) ---
+# --- FUNCIÓN DE DIBUJO DE UI (MODIFICADA PARA TRADUCCIÓN DE TEXTO) ---
 def draw_ui(ventana, remaining_time, max_time, collected, required):
     ANCHO, ALTO = ventana.get_size()
     
@@ -158,8 +158,12 @@ def draw_ui(ventana, remaining_time, max_time, collected, required):
     timer_surface = font_timer.render(time_text, True, BLANCO)
     ventana.blit(timer_surface, (BAR_X + BAR_WIDTH + 10, BAR_Y))
     
+    # --- Lógica de Traducción Aplicada Aquí ---
+    # Obtenemos la etiqueta de "Objetos" o "Objects" según el idioma
+    item_label = obtener_texto_traducido("ITEMS_COLLECTED") 
+    
     font_items = pygame.font.SysFont('Arial', 30, bold=True)
-    item_text = f"Objetos: {collected} / {required}"
+    item_text = f"{item_label}: {collected} / {required}" # Usa la etiqueta traducida
     item_color = AMARILLO if collected < required else VERDE_BARRA
     item_surface = font_items.render(item_text, True, item_color)
     

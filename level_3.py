@@ -10,7 +10,8 @@ import time
 import loading_screen3
 from audio_manager import audio_manager 
 import cortina 
-from traduccion import obtener_ruta_imagen_traducida # <--- Importación de la lógica de traducción
+# 📢 IMPORTAR LÓGICA DE TRADUCCIÓN (AÑADIDO obtener_texto_traducido)
+from traduccion import obtener_ruta_imagen_traducida, obtener_texto_traducido 
 
 # --- CONSTANTES ---
 PATH_FONDO_NIVEL_1 = "recursos/FondoNivel3.png" 
@@ -158,7 +159,7 @@ def preload_level(ventana, character_data):
     return fondo_nivel, player_group, obstaculo_group, meta_group, coleccionable_group
 
 
-# --- FUNCIÓN DE DIBUJO DE UI (sin cambios) ---
+# --- FUNCIÓN DE DIBUJO DE UI (MODIFICADA PARA TRADUCCIÓN DE TEXTO) ---
 def draw_ui(ventana, remaining_time, max_time, collected, required):
     ANCHO, ALTO = ventana.get_size()
     
@@ -181,8 +182,11 @@ def draw_ui(ventana, remaining_time, max_time, collected, required):
     timer_surface = font_timer.render(time_text, True, BLANCO)
     ventana.blit(timer_surface, (BAR_X + BAR_WIDTH + 10, BAR_Y))
     
+    # --- Lógica de Traducción Aplicada Aquí (Copiado de Nivel 1) ---
+    item_label = obtener_texto_traducido("ITEMS_COLLECTED") 
+
     font_items = pygame.font.SysFont('Arial', 30, bold=True)
-    item_text = f"Objetos: {collected} / {required}"
+    item_text = f"{item_label}: {collected} / {required}" # Usa la etiqueta traducida
     
     item_color = AMARILLO if collected < required else VERDE_BARRA
     
@@ -404,7 +408,7 @@ def run_level(ventana, precargados, img_btn_regresar, REGRESAR_RECT):
         meta_group.draw(ventana)
 
         draw_ui(ventana, remaining_time, TIEMPO_LIMITE_SEGUNDOS, coleccionables_recogidos, NUM_COLECCIONABLES_REQUERIDOS)
-        btn_pausa.draw(ventana) # 💡 Usando el nuevo BotonSimple
+        btn_pausa.draw(ventana)
         pygame.display.flip()
 
     audio_manager.stop_music()

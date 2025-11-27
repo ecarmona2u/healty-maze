@@ -13,7 +13,7 @@ import cortina
 from pathlib import Path
 
 # 📢 IMPORTAR LÓGICA DE TRADUCCIÓN
-from traduccion import obtener_ruta_imagen_traducida 
+from traduccion import obtener_ruta_imagen_traducida, obtener_texto_traducido # <-- MODIFICADO
 
 # --- CONSTANTES ---
 PATH_FONDO_NIVEL_1 = "recursos/FondoNivel1.jpg" 
@@ -29,7 +29,7 @@ PATH_BTN_PAUSA = "recursos/botones/btn_pausa.png"
 PATH_BTN_PLAY = "recursos/botones/btn_play.png"
 PATH_BTN_MENU_PAUSA = "recursos/botones/btn_menu.png"
 PATH_BTN_REINICIAR = "recursos/botones/btn_reiniciar.png"
-# 🚨 RUTA BASE para la traducción del fondo de pausa
+# RUTA BASE para la traducción del fondo de pausa
 PATH_FONDO_PAUSA_BASE = "fondo_menu_pausa.png" 
 
 # Colores para la UI
@@ -159,7 +159,7 @@ def preload_level(ventana, character_dict):
     return fondo_nivel, player_group, obstaculo_group, meta_group, coleccionable_group
 
 
-# --- FUNCIÓN DE DIBUJO DE UI (sin cambios) ---
+# --- FUNCIÓN DE DIBUJO DE UI (MODIFICADA PARA TRADUCCIÓN DE TEXTO) ---
 def draw_ui(ventana, remaining_time, max_time, collected, required):
     ANCHO, ALTO = ventana.get_size()
     
@@ -182,8 +182,12 @@ def draw_ui(ventana, remaining_time, max_time, collected, required):
     timer_surface = font_timer.render(time_text, True, BLANCO)
     ventana.blit(timer_surface, (BAR_X + BAR_WIDTH + 10, BAR_Y))
     
+    # --- Lógica de Traducción Aplicada Aquí ---
+    # Usa la clave "ITEMS_COLLECTED" para obtener "Objetos" o "Objects"
+    item_label = obtener_texto_traducido("ITEMS_COLLECTED") 
+
     font_items = pygame.font.SysFont('Arial', 30, bold=True)
-    item_text = f"Objetos: {collected} / {required}"
+    item_text = f"{item_label}: {collected} / {required}" # Usa la etiqueta traducida
     
     item_color = AMARILLO if collected < required else VERDE_BARRA
     
@@ -207,7 +211,7 @@ def run_pause_menu(ventana):
     
     fondo_pausa_img = None
     
-    # 🚨 Cargar fondo de pausa traducido
+    # Cargar fondo de pausa traducido
     path_fondo_pausa_traducido = obtener_ruta_imagen_traducida(PATH_FONDO_PAUSA_BASE)
     
     try:
