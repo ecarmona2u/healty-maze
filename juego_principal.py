@@ -42,10 +42,7 @@ PATH_AJUSTES = "recursos/botones/boton_ajustes.png"
 PATH_BTN_REGRESAR = "recursos/botones/boton_regresar.png"  
 
 # --- ESTADO DE JUEGO --- 
-# estado_actual = 'menu'  # Original
-# --- NUEVOS CAMBIOS PARA INTRO ---
 estado_actual = 'intro'  # El juego comienza en la intro
-# --- FIN NUEVOS CAMBIOS PARA INTRO ---
 personaje_seleccionado = None 
 nivel_actual = None 
 nivel_recursos_precargados = None  
@@ -150,7 +147,8 @@ def actualizar_animacion_botones(assets, mouse_pos):
     si NO está en hover. 
     """ 
     for action, asset in assets.items(): 
-        # *** RESTRICCIÓN: SOLO ANIMAR EL BOTÓN DE INICIO *** if action == 'iniciar_nivel': 
+        # *** RESTRICCIÓN: SOLO ANIMAR EL BOTÓN DE INICIO ***
+        if action == 'iniciar_nivel': 
             rect_normal = asset['normal_rect'] 
              
             # Solo animar si el mouse NO está encima 
@@ -247,8 +245,7 @@ while True:
             manejar_clic_menu(mouse_pos, button_assets) 
 
 # GESTIÓN DE ESTADOS Y DIBUJO     
-    # --- NUEVOS CAMBIOS PARA INTRO ---
-    # 0. ESTADO: INTRODUCCIÓN
+    # --- 0. ESTADO: INTRODUCCIÓN ---
     if estado_actual == 'intro':
         
         # Ejecutar la secuencia de la intro
@@ -263,8 +260,6 @@ while True:
         
         continue # Ir al inicio del bucle while para el siguiente estado
 
-    # --- FIN NUEVOS CAMBIOS PARA INTRO ---
-    
     # Manejo de AJUSTES 
     if estado_actual == 'ajustes': 
         accion = ajustes.gestionar_ajustes_modal(surface, event_list, mouse_pos) 
@@ -355,13 +350,22 @@ while True:
     elif estado_actual == 'jugando_nivel_1': 
          
         # level_1.run_level DEBE empezar llamando a loading_screen.run_loading_screen() 
-        resultado, img_retorno, rect_retorno = level_1.run_level( 
+        level_result = level_1.run_level( 
             surface,  
             nivel_recursos_precargados,  
             img_btn_regresar,  
             REGRESAR_RECT 
         ) 
          
+        # 🐛 FIX CRÍTICO: Comprobación de seguridad para evitar TypeError: cannot unpack non-iterable NoneType object.
+        # Esto sucede si el nivel retorna None al cerrarse la ventana.
+        if level_result is None or not isinstance(level_result, tuple) or len(level_result) != 3:
+            # Si hay un error de retorno, asumimos que el usuario quiere salir al menú principal
+            resultado, img_retorno, rect_retorno = 'MENU', None, None
+        else:
+            resultado, img_retorno, rect_retorno = level_result
+
+        # Ahora procesamos el resultado seguro
         if resultado not in ('REINTENTAR', 'NEXT_LEVEL', 'LEVEL_2'):  
             nivel_recursos_precargados = None 
              
@@ -397,13 +401,20 @@ while True:
     elif estado_actual == 'jugando_nivel_2': 
          
         # level_2.run_level DEBE empezar llamando a loading_screen2.run_loading_screen() 
-        resultado, img_retorno, rect_retorno = level_2.run_level( 
+        level_result = level_2.run_level( 
             surface,  
             nivel_recursos_precargados,  
             img_btn_regresar,  
             REGRESAR_RECT 
         ) 
-         
+        
+        # 🐛 FIX CRÍTICO: Comprobación de seguridad para evitar TypeError
+        if level_result is None or not isinstance(level_result, tuple) or len(level_result) != 3:
+            resultado, img_retorno, rect_retorno = 'MENU', None, None
+        else:
+            resultado, img_retorno, rect_retorno = level_result
+
+        # Ahora procesamos el resultado seguro
         if resultado not in ('REINTENTAR', 'NEXT_LEVEL'): 
             nivel_recursos_precargados = None 
              
@@ -420,13 +431,20 @@ while True:
     elif estado_actual == 'jugando_nivel_3': 
          
         # level_3.run_level DEBE empezar llamando a loading_screen2.run_loading_screen() 
-        resultado, img_retorno, rect_retorno = level_3.run_level( 
+        level_result = level_3.run_level( 
             surface,  
             nivel_recursos_precargados,  
             img_btn_regresar,  
             REGRESAR_RECT 
         ) 
          
+        # 🐛 FIX CRÍTICO: Comprobación de seguridad para evitar TypeError
+        if level_result is None or not isinstance(level_result, tuple) or len(level_result) != 3:
+            resultado, img_retorno, rect_retorno = 'MENU', None, None
+        else:
+            resultado, img_retorno, rect_retorno = level_result
+
+        # Ahora procesamos el resultado seguro
         if resultado not in ('REINTENTAR', 'NEXT_LEVEL'): 
             nivel_recursos_precargados = None 
              
@@ -434,6 +452,7 @@ while True:
         elif resultado == 'REINTENTAR': estado_actual = 'precarga_nivel_3' 
         elif resultado == 'NEXT_LEVEL':  
             audio_manager.stop_music()  
+            # Este es el final del juego, llamamos a la pantalla final
             run_pantalla_ganaste(surface)  
             estado_actual = 'seleccionar_nivel'  
         elif resultado == 'SELECT_CHARACTER': estado_actual = 'seleccionar_personaje' 
@@ -444,13 +463,20 @@ while True:
     elif estado_actual == 'jugando_tutorial': 
          
         # tutorial_level.run_tutorial_level DEBE empezar llamando a loading_screen.run_loading_screen() 
-        resultado, img_retorno, rect_retorno = tutorial_level.run_tutorial_level( 
+        level_result = tutorial_level.run_tutorial_level( 
             surface,  
             nivel_recursos_precargados,  
             img_btn_regresar,  
             REGRESAR_RECT 
         ) 
          
+        # 🐛 FIX CRÍTICO: Comprobación de seguridad para evitar TypeError
+        if level_result is None or not isinstance(level_result, tuple) or len(level_result) != 3:
+            resultado, img_retorno, rect_retorno = 'MENU', None, None
+        else:
+            resultado, img_retorno, rect_retorno = level_result
+
+        # Ahora procesamos el resultado seguro
         if resultado != 'REINTENTAR': 
             nivel_recursos_precargados = None 
          

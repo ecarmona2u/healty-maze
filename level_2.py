@@ -12,10 +12,10 @@ from audio_manager import audio_manager
 import cortina 
 from pathlib import Path 
 
-# 📢 IMPORTAR LÓGICA DE TRADUCCIÓN (Añadido obtener_texto_traducido)
+#IMPORTAR LÓGICA DE TRADUCCIÓN (Añadido obtener_texto_traducido)
 from traduccion import obtener_ruta_imagen_traducida, obtener_texto_traducido # <-- MODIFICADO
 
-# --- CONSTANTES ---
+#CONSTANTES
 PATH_FONDO_NIVEL_1 = "recursos/FondoNivel2.jpg" 
 AZUL_FALLBACK = (50, 50, 150)
 NUM_COLECCIONABLES_REQUERIDOS = 6 

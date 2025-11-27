@@ -2,7 +2,7 @@ import pygame
 from player import Player 
 from obstaculo import Obstaculo 
 from meta import Meta 
-from ganaste_entre_nivel import run_pantalla_ganaste 
+from ganaste_entre_nivel3 import run_pantalla_ganaste 
 from pantalla_derrota import run_pantalla_derrota
 from coleccionable import Coleccionable 
 import sys
@@ -263,8 +263,24 @@ def run_pause_menu(ventana):
 # --- FUNCIÓN PRINCIPAL DEL NIVEL 3 (MODIFICADA) ---
 def run_level(ventana, precargados, img_btn_regresar, REGRESAR_RECT):
     
-    fondo_nivel, player_group, obstaculo_group, meta_group, coleccionable_group = precargados
-    
+    # --- Solución para TypeError: cannot unpack non-iterable NoneType object ---
+    # Verifica si la precarga falló (devolvió None) antes de intentar desempaquetar.
+    if precargados is None:
+        print("Error: Precarga de nivel fallida (precargados es None). Devolviendo a SELECTOR_NIVEL.")
+        fondo_nivel = None 
+        player_group = pygame.sprite.Group() 
+        obstaculo_group = pygame.sprite.Group()
+        meta_group = pygame.sprite.Group()
+        coleccionable_group = pygame.sprite.Group()
+        
+        # MODIFICACIÓN CLAVE: Devolver "SELECTOR_NIVEL" para ir al menú principal
+        return "SELECTOR_NIVEL", None, None 
+
+    else:
+        # Desempaquetado normal si precargados es una tupla de 5 elementos
+        fondo_nivel, player_group, obstaculo_group, meta_group, coleccionable_group = precargados
+    # ---------------------------------------------------------------------------
+
     ANCHO = ventana.get_width()
     clock = pygame.time.Clock()
     
@@ -282,7 +298,13 @@ def run_level(ventana, precargados, img_btn_regresar, REGRESAR_RECT):
     # PASO DE CARGA INICIAL
     # --------------------------------------------------------------------------------
     
-    ventana.blit(fondo_nivel, (0, 0)) 
+    # Verificar si el fondo fue cargado correctamente 
+    if fondo_nivel:
+        ventana.blit(fondo_nivel, (0, 0)) 
+    else:
+        # Fallback de color sólido 
+        ventana.fill(AZUL_FALLBACK) 
+        
     player_group.draw(ventana)
     obstaculo_group.draw(ventana) 
     coleccionable_group.draw(ventana) 
@@ -321,7 +343,8 @@ def run_level(ventana, precargados, img_btn_regresar, REGRESAR_RECT):
         if is_paused:
             audio_manager.pause_music()
             
-            ventana.blit(fondo_nivel, (0, 0)) 
+            if fondo_nivel:
+                ventana.blit(fondo_nivel, (0, 0)) 
             player_group.draw(ventana)
             obstaculo_group.draw(ventana) 
             coleccionable_group.draw(ventana) 
@@ -356,11 +379,19 @@ def run_level(ventana, precargados, img_btn_regresar, REGRESAR_RECT):
             # LLAMADA A LA ANIMACIÓN DE CORTINA
             cortina.run_cortina_animation(ventana)
             
+            # 🐞 FIX: Asegurar que run_pantalla_derrota devuelva una tupla y manejar None
             accion_derrota = run_pantalla_derrota(ventana)
+            if accion_derrota is None: return "SELECTOR_NIVEL", None, None # Retorno seguro en caso de error
+            
             if accion_derrota[0] == "MENU": return "SELECTOR_NIVEL", None, None 
             return accion_derrota
         
         # ACTUALIZAR Y COLISIONES
+        # Comprobar que haya al menos un sprite antes de acceder a [0]
+        if not player_group.sprites():
+            # Si el grupo de jugadores está vacío (p. ej., por fallo de precarga), salimos del bucle.
+            return "SELECTOR_NIVEL", None, None
+            
         player = player_group.sprites()[0] 
         player_group.update(obstaculo_group) 
         coleccionable_group.update(dt) 
@@ -394,14 +425,24 @@ def run_level(ventana, precargados, img_btn_regresar, REGRESAR_RECT):
             cortina.run_cortina_animation(ventana)
             
             if coleccionables_recogidos >= NUM_COLECCIONABLES_REQUERIDOS:
-                return run_pantalla_ganaste(ventana, img_btn_regresar, REGRESAR_RECT) 
+                # 🐞 FIX: Asegurar que run_pantalla_ganaste devuelva una tupla y manejar None
+                resultado_final = run_pantalla_ganaste(ventana, img_btn_regresar, REGRESAR_RECT)
+                if resultado_final is None: return "SELECTOR_NIVEL", None, None # Retorno seguro en caso de error
+                return resultado_final
             else:
+                # 🐞 FIX: Asegurar que run_pantalla_derrota devuelva una tupla y manejar None
                 accion_derrota = run_pantalla_derrota(ventana) 
+                if accion_derrota is None: return "SELECTOR_NIVEL", None, None # Retorno seguro en caso de error
+                
                 if accion_derrota[0] == "MENU": return "SELECTOR_NIVEL", None, None 
                 return accion_derrota
                 
         # 4. Dibujar
-        ventana.blit(fondo_nivel, (0, 0)) 
+        if fondo_nivel:
+            ventana.blit(fondo_nivel, (0, 0)) 
+        else:
+             ventana.fill(AZUL_FALLBACK) # Fallback si el fondo es None
+             
         player_group.draw(ventana)
         obstaculo_group.draw(ventana) 
         coleccionable_group.draw(ventana) 
@@ -412,4 +453,5 @@ def run_level(ventana, precargados, img_btn_regresar, REGRESAR_RECT):
         pygame.display.flip()
 
     audio_manager.stop_music()
-    return "MENU", None, None
+    # Retorno por defecto al salir del bucle (también cambiado de "MENU" a "SELECTOR_NIVEL" para consistencia)
+    return "SELECTOR_NIVEL", None, None
