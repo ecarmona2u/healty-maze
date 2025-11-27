@@ -10,6 +10,10 @@ import time
 import loading_screen 
 from audio_manager import audio_manager 
 import cortina 
+from pathlib import Path
+
+# 📢 IMPORTAR LÓGICA DE TRADUCCIÓN
+from traduccion import obtener_ruta_imagen_traducida 
 
 # --- CONSTANTES ---
 PATH_FONDO_NIVEL_1 = "recursos/FondoNivel1.jpg" 
@@ -21,11 +25,12 @@ TIEMPO_BONIFICACION = 0
 COLECCIONABLES_BUENOS_INDICES = [0, 1, 2] 
 
 # --- CONSTANTES DE PAUSA ---
-PATH_BTN_PAUSA = "recursos/btn_pausa.png"
-PATH_BTN_PLAY = "recursos/btn_play.png"
-PATH_BTN_MENU_PAUSA = "recursos/btn_menu.png"
-PATH_BTN_REINICIAR = "recursos/btn_reiniciar.png"
-PATH_FONDO_PAUSA = "recursos/fondo_menu_pausa.png" 
+PATH_BTN_PAUSA = "recursos/botones/btn_pausa.png"
+PATH_BTN_PLAY = "recursos/botones/btn_play.png"
+PATH_BTN_MENU_PAUSA = "recursos/botones/btn_menu.png"
+PATH_BTN_REINICIAR = "recursos/botones/btn_reiniciar.png"
+# 🚨 RUTA BASE para la traducción del fondo de pausa
+PATH_FONDO_PAUSA_BASE = "fondo_menu_pausa.png" 
 
 # Colores para la UI
 VERDE_BARRA = (0, 200, 0)
@@ -117,7 +122,7 @@ def setup_level():
     
     # COLECCIONABLES (Índices 0-2 BUENOS, 3-5 MALOS)
     coleccionables_coords = [
-        (24, 186, 0), (347, 217, 2), (257, 644, 1), (595, 628, 2), 
+        (24, 186, 0), (347, 217, 2), (257, 630, 1), (595, 628, 2), 
         (807, 391, 0), (574, 191, 1), 
         # Malos
         (430, 416, 3), (186, 510, 4), (974, 648, 5), (1192, 510, 3), 
@@ -187,7 +192,7 @@ def draw_ui(ventana, remaining_time, max_time, collected, required):
     ventana.blit(item_surface, (BAR_X, BAR_Y + BAR_HEIGHT + 10))
 
 # --------------------------------------------------------------------------
-# FUNCIÓN DEL MENÚ DE PAUSA
+# FUNCIÓN DEL MENÚ DE PAUSA (CON FONDO TRADUCIDO)
 # --------------------------------------------------------------------------
 def run_pause_menu(ventana):
     ANCHO, ALTO = ventana.get_size()
@@ -201,10 +206,15 @@ def run_pause_menu(ventana):
     PANEL_Y = ALTO // 2 - PANEL_H // 2
     
     fondo_pausa_img = None
+    
+    # 🚨 Cargar fondo de pausa traducido
+    path_fondo_pausa_traducido = obtener_ruta_imagen_traducida(PATH_FONDO_PAUSA_BASE)
+    
     try:
-        fondo_pausa_img_orig = pygame.image.load(PATH_FONDO_PAUSA).convert_alpha()
+        fondo_pausa_img_orig = pygame.image.load(path_fondo_pausa_traducido).convert_alpha()
         fondo_pausa_img = pygame.transform.scale(fondo_pausa_img_orig, (PANEL_W, PANEL_H))
     except pygame.error as e:
+        print(f"Error cargando fondo de pausa traducido: {path_fondo_pausa_traducido}. Usando color sólido.")
         fondo_pausa_img = pygame.Surface((PANEL_W, PANEL_H)); 
         fondo_pausa_img.fill((80, 80, 80)) 
     

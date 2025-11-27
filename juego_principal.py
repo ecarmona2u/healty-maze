@@ -36,10 +36,10 @@ ANIMATION_SPEED = 0.2
 
 # Paths de las imágenes (DEBEN existir) 
 PATH_FONDO_MENU = "recursos/fondo_menu.png"  
-PATH_INICIAR = "recursos/boton_iniciar.png" 
+PATH_INICIAR = "recursos/botones/boton_iniciar.png" 
 PATH_SALIR = "recursos/botones/btn_X.png" 
-PATH_AJUSTES = "recursos/boton_ajustes.png"  
-PATH_BTN_REGRESAR = "recursos/boton_regresar.png"  
+PATH_AJUSTES = "recursos/botones/boton_ajustes.png"  
+PATH_BTN_REGRESAR = "recursos/botones/boton_regresar.png"  
 
 # --- ESTADO DE JUEGO --- 
 # estado_actual = 'menu'  # Original

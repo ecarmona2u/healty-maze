@@ -5,7 +5,7 @@ import os
 # --- CONFIGURACIÓN DE LA INTRO ---
 INTRO_FRAMES_PATH = "recursos/videos/intro/"  
 NUM_FRAMES = 81  
-FRAME_DISPLAY_TIME = 6  
+FRAME_DISPLAY_TIME = 7
 
 # --- CONFIGURACIÓN DE AUDIO (NUEVO) ---
 INTRO_AUDIO_PATH = "recursos/videos/intro.mp3" 

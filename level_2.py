@@ -10,6 +10,8 @@ import time
 import loading_screen2 
 from audio_manager import audio_manager 
 import cortina 
+from pathlib import Path # Importado para manejo seguro de rutas
+from traduccion import obtener_ruta_imagen_traducida # Importar lógica de traducción
 
 # --- CONSTANTES ---
 PATH_FONDO_NIVEL_1 = "recursos/FondoNivel2.jpg" 
@@ -21,11 +23,12 @@ TIEMPO_BONIFICACION = 0
 COLECCIONABLES_BUENOS_INDICES = [6, 7, 8] 
 
 # --- CONSTANTES DE PAUSA y UI ---
-PATH_BTN_PAUSA = "recursos/btn_pausa.png"
-PATH_BTN_PLAY = "recursos/btn_play.png"
-PATH_BTN_MENU_PAUSA = "recursos/btn_menu.png"
-PATH_BTN_REINICIAR = "recursos/btn_reiniciar.png"
-PATH_FONDO_PAUSA = "recursos/fondo_menu_pausa.png" 
+PATH_BTN_PAUSA = "recursos/botones/btn_pausa.png"
+PATH_BTN_PLAY = "recursos/botones/btn_play.png"
+PATH_BTN_MENU_PAUSA = "recursos/botones/btn_menu.png"
+PATH_BTN_REINICIAR = "recursos/botones/btn_reiniciar.png"
+# Usamos el nombre base del archivo para la traducción
+PATH_FONDO_PAUSA_BASE = "fondo_menu_pausa.png" 
 
 VERDE_BARRA = (0, 200, 0)
 ROJO_BARRA = (200, 0, 0)
@@ -196,7 +199,11 @@ def run_pause_menu(ventana):
     
     fondo_pausa_img = None
     try:
-        fondo_pausa_img_orig = pygame.image.load(PATH_FONDO_PAUSA).convert_alpha()
+        # 1. Obtener la ruta traducida para el fondo del menú de pausa
+        path_fondo_traducido = obtener_ruta_imagen_traducida(PATH_FONDO_PAUSA_BASE) 
+
+        # 2. Cargar la imagen traducida
+        fondo_pausa_img_orig = pygame.image.load(path_fondo_traducido).convert_alpha()
         fondo_pausa_img = pygame.transform.scale(fondo_pausa_img_orig, (PANEL_W, PANEL_H))
     except pygame.error as e:
         fondo_pausa_img = pygame.Surface((PANEL_W, PANEL_H)); 

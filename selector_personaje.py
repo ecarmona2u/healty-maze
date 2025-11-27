@@ -1,12 +1,15 @@
 import pygame
 import sys
+from pathlib import Path # Importado para manejo seguro de rutas
 # Asegúrate de tener la clase Player disponible
 from player import Player 
+
+# 📢 IMPORTAR LÓGICA DE TRADUCCIÓN
+from traduccion import obtener_ruta_imagen_traducida 
 
 # --- CONSTANTES ---
 IMG_SIZE_DISPLAY = (507, 300) # Tamaño para la vista previa
 IMG_SIZE_GAME = (60, 60)     # Tamaño para el juego real (player.py)
-# COLOR_RESALTE (Ya no es necesario, pero lo mantenemos por si se quiere un 'hover')
 COLOR_RESALTE = (255, 255, 0)
 
 # Constantes para la animación del selector
@@ -15,8 +18,10 @@ ANIMATION_MAX_PX = 0   # Máximo crecimiento para la animación de reposo (pulsa
 ANIMATION_SPEED = 0.2   # Velocidad de la animación
 
 # Rutas
-PATH_FONDO_SELECTOR_PERSONAJE = "recursos/fondo_seleccionar_personaje.png"
-PATH_BTN_REGRESAR = "recursos/botones/btn_regresar.png" 
+# 🚨 RUTA BASE para la traducción
+PATH_FONDO_SELECTOR_PERSONAJE_BASE = "fondo_seleccionar_personaje.png"
+# Usamos Path para la ruta fija (aunque no se use directamente, es buena práctica)
+PATH_BTN_REGRESAR = str(Path("recursos") / "botones" / "btn_regresar.png") 
 PATH_ANIMACIONES = "recursos/animaciones/"
 PATH_IMAGENES_MENU = "recursos/imagenes_menu_perso/"
 
@@ -98,11 +103,13 @@ def run_selector_personaje(ventana):
     
     # --- CARGA DE RECURSOS ---
     
-    # 1. Cargar Fondo
+    # 1. Cargar Fondo (TRADUCIDO)
+    path_fondo_traducido = obtener_ruta_imagen_traducida(PATH_FONDO_SELECTOR_PERSONAJE_BASE)
     try:
-        fondo_original = pygame.image.load(PATH_FONDO_SELECTOR_PERSONAJE).convert()
+        fondo_original = pygame.image.load(path_fondo_traducido).convert() # <<< Ruta traducida
         fondo_selector = pygame.transform.scale(fondo_original, (ANCHO, ALTO))
     except pygame.error:
+        print(f"Error cargando fondo traducido: {path_fondo_traducido}. Usando color sólido.")
         fondo_selector = pygame.Surface((ANCHO, ALTO)); fondo_selector.fill((10, 10, 50)) 
 
     # 2. Inicialización de Personajes (Incluye estados de Animación/Hover)

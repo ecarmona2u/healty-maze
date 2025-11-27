@@ -1,6 +1,10 @@
 import pygame
 import sys 
 import tutorial_level        
+from pathlib import Path # Importado para manejo seguro de rutas
+
+# 📢 IMPORTAR LÓGICA DE TRADUCCIÓN
+from traduccion import obtener_ruta_imagen_traducida 
 
 # --- CONSTANTES ---
 # Nuevo tamaño por defecto (se usará si no se define uno individual)
@@ -12,24 +16,27 @@ AZUL_FONDO = (20, 20, 50)
 LEVEL_HOVER_GROWTH = 20 # 20px de crecimiento total
 
 BTN_REGRESAR_SIZE = (50, 50)
-PATH_BTN_REGRESAR = "recursos/boton_regresar.png" 
+# Se usa Path para la ruta fija (no traducida)
+PATH_BTN_REGRESAR = str(Path("recursos") / "botones" / "boton_regresar.png") 
 COLOR_REGRESAR_FALLBACK = (200, 50, 50) 
 
 # Paths de las imágenes de nivel con COORDENADAS FIJAS (x, y) y TAMAÑO INDIVIDUAL
 NIVEL_PATHS = {
     # Tutorial: Usa el tamaño por defecto (250x200)
-    'tutorial': {"path": "recursos/nivel_0_img.png", "pos_x": 502, "pos_y": 132, "width":273 , "height": 152}, 
+    'tutorial': {"path": "recursos/botones/nivel_0_img.png", "pos_x": 502, "pos_y": 132, "width":273 , "height": 152}, 
     
     # Nivel 1: Tamaño grande (350x250)
-    'nivel_1': {"path": "recursos/nivel_1_img.png", "pos_x": 24, "pos_y": 380, "width": 297, "height": 204}, 
+    'nivel_1': {"path": "recursos/botones/nivel_1_img.png", "pos_x": 24, "pos_y": 380, "width": 297, "height": 204}, 
     
     # Nivel 2: Tamaño pequeño (150x150)
-    'nivel_2': {"path": "recursos/nivel_2_img.png", "pos_x": 474, "pos_y": 298, "width": 377, "height": 282}, # <-- OK
+    'nivel_2': {"path": "recursos/botones/nivel_2_img.png", "pos_x": 474, "pos_y": 298, "width": 377, "height": 282}, 
     
     # Nivel 3: Usa el tamaño por defecto (250x200)
-    'nivel_3': {"path": "recursos/nivel_3_img.png", "pos_x": 943, "pos_y": 274, "width": 317, "height": 313}, # <-- OK
+    'nivel_3': {"path": "recursos/botones/nivel_3_img.png", "pos_x": 943, "pos_y": 274, "width": 317, "height": 313}, 
 }
-PATH_FONDO = "recursos/fondo_selector_nivel.png"
+
+# 🚨 RUTA BASE para la traducción
+PATH_FONDO_BASE = "fondo_selector_nivel.png"
 
 def run_selector_nivel(ventana, character_data): 
     
@@ -40,10 +47,16 @@ def run_selector_nivel(ventana, character_data):
     pygame.font.init() 
     
     # --- CARGA Y PREPARACIÓN DE IMÁGENES ---
+    
+    # 1. Cargar Fondo (TRADUCIDO)
+    path_fondo_traducido = obtener_ruta_imagen_traducida(PATH_FONDO_BASE)
+    
     try:
-        fondo_original = pygame.image.load(PATH_FONDO).convert()
+        # Usa la ruta traducida para cargar el fondo
+        fondo_original = pygame.image.load(path_fondo_traducido).convert()
         fondo_selector = pygame.transform.scale(fondo_original, (ANCHO, ALTO))
     except pygame.error:
+        print(f"Error cargando fondo traducido: {path_fondo_traducido}. Usando color sólido.")
         fondo_selector = pygame.Surface((ANCHO, ALTO)); fondo_selector.fill(AZUL_FONDO) 
 
     imagenes_niveles = {}

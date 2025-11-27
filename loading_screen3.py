@@ -1,10 +1,11 @@
 import pygame
 import sys
 import time 
+from traduccion import obtener_ruta_imagen_traducida # <--- Importación de la lógica de traducción
 
 # --- CONSTANTES ---
-# Define la ruta a la imagen que quieres usar como fondo de carga (Nivel 3)
-PATH_LOADING_BACKGROUND = "recursos/loading_nivel_3.png" 
+# Define la ruta BASE a la imagen que quieres usar como fondo de carga (Nivel 3)
+PATH_LOADING_BACKGROUND_BASE = "loading_nivel_3.png" # <--- Ruta base para traducción
 
 # Duración mínima en segundos que la pantalla estará visible
 MIN_DISPLAY_TIME = 5 
@@ -34,9 +35,12 @@ def run_loading_screen(ventana):
     ALTO = ventana.get_height()
     clock = pygame.time.Clock()
     
+    # Obtener la ruta traducida
+    path_fondo_traducido = obtener_ruta_imagen_traducida(PATH_LOADING_BACKGROUND_BASE)
+    
     # 1. Cargar y Escalar la Imagen de Carga (al tamaño del modal)
     try:
-        fondo_original = pygame.image.load(PATH_LOADING_BACKGROUND).convert_alpha()
+        fondo_original = pygame.image.load(path_fondo_traducido).convert_alpha() # <--- Uso de la ruta traducida
         imagen_modal = pygame.transform.scale(fondo_original, (MODAL_WIDTH, MODAL_HEIGHT))
     except pygame.error as e:
         print(f"Error cargando fondo de carga Nivel 3: {e}. Usando fallback para la imagen principal.")

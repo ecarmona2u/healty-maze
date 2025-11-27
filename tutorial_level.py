@@ -8,20 +8,24 @@ import sys
 import time 
 # Importación correcta del gestor de audio
 from audio_manager import audio_manager 
+# Lógica de traducción
+from traduccion import obtener_ruta_imagen_traducida # <--- AÑADIDO
 
 # --- CONSTANTES DE NIVEL ESPECÍFICAS DEL TUTORIAL ---
-PATH_FONDO_TUTORIAL = "recursos/FondoTutorial.png" 
+# Usamos la RUTA BASE para permitir la traducción
+PATH_FONDO_TUTORIAL_BASE = "FondoTutorial.png" 
 AZUL_FALLBACK = (50, 50, 150)
 NUM_COLECCIONABLES_REQUERIDOS = 2 
-TIEMPO_LIMITE_SEGUNDOS = 240
+TIEMPO_LIMITE_SEGUNDOS = 60
 TIEMPO_PENALIZACION = 3 
 
 # --- CONSTANTES DE PAUSA (Completas y Corregidas) ---
-PATH_BTN_PAUSA = "recursos/btn_pausa.png"
-PATH_BTN_PLAY = "recursos/btn_play.png"
-PATH_BTN_MENU_PAUSA = "recursos/btn_menu.png"
-PATH_BTN_REINICIAR = "recursos/btn_reiniciar.png"
-PATH_FONDO_PAUSA = "recursos/fondo_menu_pausa.png" 
+PATH_BTN_PAUSA = "recursos/botones/btn_pausa.png"
+PATH_BTN_PLAY = "recursos/botones/btn_play.png"
+PATH_BTN_MENU_PAUSA = "recursos/botones/btn_menu.png"
+PATH_BTN_REINICIAR = "recursos/botones/btn_reiniciar.png"
+# Usamos la RUTA BASE para permitir la traducción
+PATH_FONDO_PAUSA_BASE = "fondo_menu_pausa.png" 
 # Colores UI
 VERDE_BARRA = (0, 200, 0)
 ROJO_BARRA = (200, 0, 0)
@@ -105,8 +109,8 @@ def setup_tutorial_level(player):
     meta_group.add(meta)
     
     coleccionables_coords = [
-        (576, 295, 0),  (894, 219, 2),  # Buenos (Índices 0, 1, 2)
-        (725, 639, 3), # Malo (Índices 3, 4, 5)
+        (576, 295, 0),  (894, 190, 2),  # Buenos (Índices 0, 1, 2)
+        (725, 625, 3), # Malo (Índices 3, 4, 5)
     ]
 
     for x, y, index in coleccionables_coords:
@@ -114,13 +118,16 @@ def setup_tutorial_level(player):
         
     return obstaculo_list, meta_group, coleccionable_group 
 
-# --- FUNCIÓN DE PRECÁRGALA (sin cambios funcionales) ---
+# --- FUNCIÓN DE PRECÁRGALA (ACTUALIZADA PARA TRADUCCIÓN) ---
 def preload_tutorial_level(ventana, character_data):
     ANCHO = ventana.get_width()
     ALTO = ventana.get_height()
     
+    # 1. Obtener la ruta traducida para el fondo del nivel
+    path_fondo_traducido = obtener_ruta_imagen_traducida(PATH_FONDO_TUTORIAL_BASE)
+    
     try:
-        fondo_nivel = pygame.image.load(PATH_FONDO_TUTORIAL).convert()
+        fondo_nivel = pygame.image.load(path_fondo_traducido).convert() # <--- Uso de la ruta traducida
         fondo_nivel = pygame.transform.scale(fondo_nivel, (ANCHO, ALTO))
     except pygame.error as e:
         fondo_nivel = pygame.Surface((ANCHO, ALTO)); fondo_nivel.fill(AZUL_FALLBACK)
@@ -158,7 +165,7 @@ def draw_ui(ventana, remaining_time, max_time, collected, required):
     
     ventana.blit(item_surface, (BAR_X, BAR_Y + BAR_HEIGHT + 10))
 
-# --- FUNCIÓN DEL MENÚ DE PAUSA ---
+# --- FUNCIÓN DEL MENÚ DE PAUSA (ACTUALIZADA PARA TRADUCCIÓN) ---
 def run_pause_menu(ventana):
     ANCHO, ALTO = ventana.get_size()
     fondo_oscuro = pygame.Surface((ANCHO, ALTO), pygame.SRCALPHA)
@@ -169,8 +176,11 @@ def run_pause_menu(ventana):
     
     COLOR_FIJO_PAUSA = (120, 120, 120) 
     
+    # 2. Obtener la ruta traducida para el fondo del menú de pausa
+    path_fondo_pausa_traducido = obtener_ruta_imagen_traducida(PATH_FONDO_PAUSA_BASE)
+    
     try:
-        fondo_pausa_img_orig = pygame.image.load(PATH_FONDO_PAUSA).convert_alpha()
+        fondo_pausa_img_orig = pygame.image.load(path_fondo_pausa_traducido).convert_alpha() # <--- Uso de la ruta traducida
         fondo_pausa_img = pygame.transform.scale(fondo_pausa_img_orig, (PANEL_W, PANEL_H))
     except pygame.error:
         fondo_pausa_img = pygame.Surface((PANEL_W, PANEL_H)); fondo_pausa_img.fill(COLOR_FIJO_PAUSA)
@@ -292,12 +302,15 @@ def run_tutorial_level(ventana, precargados, img_btn_regresar, REGRESAR_RECT):
 
         # 3. LÓGICA DEL JUEGO 
         
-        # CONDICIÓN DE DERROTA POR TIEMPO
+        # CONDICIÓN DE TIEMPO
         if remaining_time <= 0:
-            running = False
-            audio_manager.stop_music() 
-            return "SELECTOR_NIVEL", None, None # Derrota en tutorial lleva al selector
-
+            # 🚨 MODIFICACIÓN SOLICITADA: Reiniciar el tiempo en lugar de salir
+            print("Tiempo agotado. Reiniciando contador de tiempo.")
+            audio_manager.play_collect_bad() # Sonido para indicar el reinicio/penalización
+            start_time = time.time()         # Reinicia el tiempo de inicio (para que el nuevo remaining_time sea ~TIEMPO_LIMITE_SEGUNDOS)
+            penalizacion_total = 0           # Reinicia la penalización acumulada
+            # El bucle continúa, el juego NO se detiene
+            
         # ACTUALIZAR Y COLISIONES
         player = player_group.sprites()[0] 
         player_group.update(obstaculo_group) 
@@ -320,8 +333,10 @@ def run_tutorial_level(ventana, precargados, img_btn_regresar, REGRESAR_RECT):
             running = False 
             audio_manager.stop_music()
             if coleccionables_recogidos >= NUM_COLECCIONABLES_REQUERIDOS:
+                # Éxito: va a la pantalla de victoria del tutorial
                 return run_pantalla_tutorial_win(ventana, img_btn_regresar, REGRESAR_RECT) 
             else:
+                # Fracaso: sale al selector de nivel (porque no cumplió el objetivo de coleccionables)
                 return "SELECTOR_NIVEL", None, None
                 
         # 4. Dibujar

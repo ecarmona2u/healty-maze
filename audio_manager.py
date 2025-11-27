@@ -17,7 +17,7 @@ PATH_SFX_GOOD = "recursos/audio/item_bueno.mp3"
 PATH_SFX_BAD = "recursos/audio/item_malo.mp3"
 
 # 🚨 VOLUMEN DE LOS EFECTOS DE SONIDO (0.0 a 1.0)
-SFX_VOLUME = 0.3 # <--- AJUSTA ESTE VALOR PARA HACERLO MÁS FUERTE O SUAVE
+SFX_VOLUME = 0.5 # <--- AJUSTA ESTE VALOR PARA HACERLO MÁS FUERTE O SUAVE
 
 class AudioManager:
     def __init__(self):
@@ -42,7 +42,7 @@ class AudioManager:
         self.is_music_paused = False
         
         # Gestor de volumen y mute (para MÚSICA)
-        self._stored_volume = 0.5    
+        self._stored_volume = 0.3    
         self._is_muted = False
         pygame.mixer.music.set_volume(self._stored_volume)
         
